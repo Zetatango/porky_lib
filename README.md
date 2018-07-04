@@ -1,6 +1,6 @@
-Build Status:
+Build Status: [![CircleCI](https://circleci.com/gh/Zetatango/porky_lib.svg?style=svg&circle-token=f1a41896097b814585e5042a8e38425b4d1cdc0b)](https://circleci.com/gh/Zetatango/porky_lib)
 
-Code Coverage:
+Code Coverage: [![codecov](https://codecov.io/gh/Zetatango/porky_lib/branch/master/graph/badge.svg?token=WxED9350q4)](https://codecov.io/gh/Zetatango/porky_lib)
 
 # PorkyLib
 
