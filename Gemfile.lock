@@ -45,6 +45,9 @@ GEM
       rainbow (>= 2.2.2, < 4.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (~> 1.0, >= 1.0.1)
+    rubocop-rspec (1.27.0)
+      rubocop (>= 0.56.0)
+    rubocop_runner (2.1.0)
     ruby-progressbar (1.9.0)
     simplecov (0.16.1)
       docile (~> 1.1)
@@ -52,6 +55,7 @@ GEM
       simplecov-html (~> 0.10.0)
     simplecov-html (0.10.2)
     thor (0.20.0)
+    timecop (0.9.1)
     unicode-display_width (1.4.0)
     url (0.3.2)
 
@@ -66,7 +70,10 @@ DEPENDENCIES
   rake
   rspec
   rubocop
+  rubocop-rspec
+  rubocop_runner
   simplecov
+  timecop
 
 BUNDLED WITH
    1.16.1
