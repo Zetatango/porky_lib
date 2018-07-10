@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "porky_lib/version"
-
 module PorkyLib
-  # Your code goes here...
+  require 'porky_lib/config'
+  require 'porky_lib/symmetric'
+  require 'porky_lib/version'
 end

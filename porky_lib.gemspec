@@ -22,6 +22,7 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'bundler-audit'
+  spec.add_development_dependency 'byebug'
   spec.add_development_dependency 'codecov'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec'
@@ -33,4 +34,9 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop_runner'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'timecop'
+
+  spec.add_dependency 'aws-sdk-kms'
+  spec.add_dependency 'msgpack'
+  spec.add_dependency 'rbnacl'
+  spec.add_dependency 'rbnacl-libsodium'
 end
