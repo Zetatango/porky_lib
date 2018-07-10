@@ -4,7 +4,6 @@ PATH
     porky_lib (0.1.0)
       aws-sdk-kms
       msgpack
-      rbnacl
       rbnacl-libsodium
 
 GEM
