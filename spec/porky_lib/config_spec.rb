@@ -17,7 +17,7 @@ RSpec.describe PorkyLib::Config, type: :request do
   it "logger set directly is not nil" do
     PorkyLib::Config.logger = Logger.new(STDOUT)
     expect(PorkyLib::Config.logger).not_to be nil
-    expect(PorkyLib::Config.logger.is_a?(Logger)).to be true
+    expect(PorkyLib::Config.logger).to be_a(Logger)
   end
 
   it 'config does not set key/value for unknown key' do

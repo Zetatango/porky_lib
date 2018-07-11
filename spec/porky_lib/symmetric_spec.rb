@@ -58,6 +58,16 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
     end.to raise_error(RbNaCl::CryptoError)
   end
 
+  it 'Decrypt with slightly modified data raises CryptoError' do
+    key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id)
+    data_bytes = data.unpack('c*')
+    data_bytes[0] = data_bytes[0] + 1
+    data = data_bytes.pack('c*')
+    expect do
+      symmetric.decrypt(key, data, nonce)
+    end.to raise_error(RbNaCl::CryptoError)
+  end
+
   it 'Decrypt with bad ciphertext key raises InvalidCiphertextException' do
     _, data, nonce = symmetric.encrypt(plaintext_data, default_key_id)
     expect do

@@ -13,13 +13,12 @@ class PorkyLib::Symmetric
 
   def client
     require 'porky_lib/aws/kms/client' if PorkyLib::Config.config[:aws_client_mock]
-    Aws::KMS::Client.new
+    @client ||= Aws::KMS::Client.new
   end
 
   def create_key(partner_guid, service_name, key_alias)
     PorkyLib::Config.logger.info("Creating a new master key for service: '#{service_name}' for partner: '#{partner_guid}'")
-    kms_client = client
-    resp = kms_client.create_key(key_usage: CMK_KEY_USAGE, origin: CMK_KEY_ORIGIN, tags: get_tags(partner_guid, service_name))
+    resp = client.create_key(key_usage: CMK_KEY_USAGE, origin: CMK_KEY_ORIGIN, tags: get_tags(partner_guid, service_name))
     key_id = resp.to_h[:key_metadata][:key_id]
 
     # Enable automatic key rotation for the newly created CMK
@@ -46,13 +45,16 @@ class PorkyLib::Symmetric
 
     # Generate a new data encryption key
     PorkyLib::Config.logger.info('Generating new data encryption key')
-    kms_client = client
-    resp = kms_client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC)
+    resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC)
     plaintext_key = resp.to_h[:plaintext]
     ciphertext_key = resp.to_h[:ciphertext_blob]
 
     # Initialize the box
     secret_box = RbNaCl::SecretBox.new(plaintext_key)
+
+    # rubocop:disable Lint/UselessAssignment
+    plaintext_key = "\0" * plaintext_key.bytesize
+    # rubocop:enable Lint/UselessAssignment
 
     # First, make a nonce: A single-use value never repeated under the same key
     # The nonce isn't secret, and can be sent with the ciphertext.
@@ -71,11 +73,15 @@ class PorkyLib::Symmetric
 
     # Decrypt the data encryption key
     PorkyLib::Config.logger.info('Decrypting data encryption key')
-    kms_client = client
-    resp = kms_client.decrypt(ciphertext_blob: ciphertext_dek)
+    resp = client.decrypt(ciphertext_blob: ciphertext_dek)
     plaintext_key = resp.to_h[:plaintext]
 
     secret_box = RbNaCl::SecretBox.new(plaintext_key)
+
+    # rubocop:disable Lint/UselessAssignment
+    plaintext_key = "\0" * plaintext_key.bytesize
+    # rubocop:enable Lint/UselessAssignment
+
     PorkyLib::Config.logger.info('Beginning decryption')
     result = secret_box.decrypt(nonce, ciphertext)
     PorkyLib::Config.logger.info('Decryption complete')
