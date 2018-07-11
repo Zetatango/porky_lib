@@ -11,9 +11,21 @@ jobs:
     steps:
       - checkout
 
+      - restore_cache:
+          name: Restore bundle cache
+          keys:
+            - porky_lib-bundle-{{ checksum "Gemfile.lock" }}
+            - porky_lib-bundle-
+
       - run:
           name: Bundle Install
           command: bundle install
+
+      - save_cache:
+          name: Store bundle cache
+          key: porky_lib-bundle-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
 
       - run:
           name: Run rubocop

@@ -17,7 +17,12 @@ if ENV['COVERAGE'] || ENV['CI']
 end
 
 require 'bundler/setup'
+require 'byebug'
+require 'logger'
 require 'porky_lib'
+require 'porky_lib/aws/kms/client'
+
+PorkyLib::Config.configure(aws_client_mock: true)
 
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
