@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    porky_lib (0.1.0)
+    porky_lib (0.1.1)
       aws-sdk-kms
       msgpack
       rbnacl-libsodium
