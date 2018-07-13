@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Greg Fletcher"]
   spec.email         = ["greg.fletcher@zetatango.com"]
 
-  spec.summary       = 'A library for cryptographic services for the Zetatango platform'
+  spec.summary       = 'A library for cryptographic services using AWS KMS and RbNaCl'
   spec.homepage      = 'https://github.com/Zetatango/porky_lib'
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
