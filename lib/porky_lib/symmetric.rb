@@ -16,36 +16,40 @@ class PorkyLib::Symmetric
     @client ||= Aws::KMS::Client.new
   end
 
-  def create_key(partner_guid, service_name, key_alias)
-    PorkyLib::Config.logger.info("Creating a new master key for service: '#{service_name}' for partner: '#{partner_guid}'")
-    resp = client.create_key(key_usage: CMK_KEY_USAGE, origin: CMK_KEY_ORIGIN, tags: get_tags(partner_guid, service_name))
+  def create_key(tags, key_alias = nil, key_rotation_enabled = true)
+    PorkyLib::Config.logger.info("Creating a new master key")
+    resp = client.create_key(key_usage: CMK_KEY_USAGE, origin: CMK_KEY_ORIGIN, tags: tags)
     key_id = resp.to_h[:key_metadata][:key_id]
 
     # Enable automatic key rotation for the newly created CMK
-    enable_key_rotation(key_id, partner_guid, service_name)
+    enable_key_rotation(key_id) if key_rotation_enabled
 
     # Create an alias for the newly created CMK
-    create_alias(key_id, key_alias, partner_guid, service_name) if key_alias
+    create_alias(key_id, key_alias) if key_alias
 
     key_id
   end
 
-  def enable_key_rotation(key_id, partner_guid, service_name)
-    PorkyLib::Config.logger.info("Enabling automatic key rotation for master key for service: '#{service_name}' for partner: '#{partner_guid}'")
+  def enable_key_rotation(key_id)
+    PorkyLib::Config.logger.info("Enabling automatic key rotation for master key: '#{key_id}'")
     client.enable_key_rotation(key_id: key_id)
   end
 
-  def create_alias(key_id, key_alias, partner_guid, service_name)
-    PorkyLib::Config.logger.info("Setting alias as '#{key_alias}' for master key for service: '#{service_name}' for partner: '#{partner_guid}'")
+  def create_alias(key_id, key_alias)
+    PorkyLib::Config.logger.info("Setting alias as '#{key_alias}' for master key: '#{key_id}'")
     client.create_alias(target_key_id: key_id, alias_name: key_alias)
   end
 
-  def encrypt(data, cmk_key_id)
+  def encrypt(data, cmk_key_id, encryption_context = nil)
     return if data.nil? || cmk_key_id.nil?
 
     # Generate a new data encryption key
     PorkyLib::Config.logger.info('Generating new data encryption key')
-    resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC)
+
+    resp = {}
+    resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC, encryption_context: encryption_context) if encryption_context
+    resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC) unless encryption_context
+
     plaintext_key = resp.to_h[:plaintext]
     ciphertext_key = resp.to_h[:ciphertext_blob]
 
@@ -68,12 +72,16 @@ class PorkyLib::Symmetric
     [ciphertext_key, ciphertext, nonce]
   end
 
-  def decrypt(ciphertext_dek, ciphertext, nonce)
+  def decrypt(ciphertext_dek, ciphertext, nonce, encryption_context = nil)
     return if ciphertext.nil? || ciphertext_dek.nil? || nonce.nil?
 
     # Decrypt the data encryption key
     PorkyLib::Config.logger.info('Decrypting data encryption key')
-    resp = client.decrypt(ciphertext_blob: ciphertext_dek)
+
+    resp = {}
+    resp = client.decrypt(ciphertext_blob: ciphertext_dek, encryption_context: encryption_context) if encryption_context
+    resp = client.decrypt(ciphertext_blob: ciphertext_dek) unless encryption_context
+
     plaintext_key = resp.to_h[:plaintext]
 
     secret_box = RbNaCl::SecretBox.new(plaintext_key)
@@ -87,16 +95,4 @@ class PorkyLib::Symmetric
     PorkyLib::Config.logger.info('Decryption complete')
     result
   end
-
-  private
-
-  # :nocov:
-  def get_tags(partner_guid, service_name)
-    tags = []
-    tags << { tag_key: 'partner_guid', tag_value: partner_guid } unless partner_guid.nil?
-    tags << { tag_key: 'service_name', tag_value: service_name } unless service_name.nil?
-
-    tags
-  end
-  # :nocov:
 end

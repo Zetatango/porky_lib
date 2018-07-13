@@ -55,6 +55,7 @@ class Aws::KMS::Client
 
   def decrypt(ciphertext_blob:, encryption_context: nil)
     key_id, decoded_context, plaintext = MessagePack.unpack(ciphertext_blob.reverse)
+    decoded_context = Hash[decoded_context.map { |k, v| [k.to_sym, v] }] if decoded_context
     raise Aws::KMS::Errors::InvalidCiphertextException.new(nil, nil) unless decoded_context == encryption_context
 
     Aws::KMS::Types::DecryptResponse.new(

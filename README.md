@@ -1,6 +1,4 @@
-Build Status: [![CircleCI](https://circleci.com/gh/Zetatango/porky_lib.svg?style=svg&circle-token=f1a41896097b814585e5042a8e38425b4d1cdc0b)](https://circleci.com/gh/Zetatango/porky_lib)
-
-Code Coverage: [![codecov](https://codecov.io/gh/Zetatango/porky_lib/branch/master/graph/badge.svg?token=WxED9350q4)](https://codecov.io/gh/Zetatango/porky_lib)
+[![CircleCI](https://circleci.com/gh/Zetatango/porky_lib.svg?style=svg&circle-token=f1a41896097b814585e5042a8e38425b4d1cdc0b)](https://circleci.com/gh/Zetatango/porky_lib) [![codecov](https://codecov.io/gh/Zetatango/porky_lib/branch/master/graph/badge.svg?token=WxED9350q4)](https://codecov.io/gh/Zetatango/porky_lib)
 
 # PorkyLib
 
@@ -22,16 +20,84 @@ And then execute:
 Or install it yourself as:
 
     $ gem install porky_lib
+    
+Inside of your Ruby program do:
+
+```ruby
+require 'porky_lib'
+```
+... to pull it in as a dependency.
 
 ## Usage
 
-TODO: Write usage instructions here
+### Initialization
+Something like the following should be included in an initializer in your Rails project:
+```ruby
+# Use PorkyLib's AWS KMS mock client except in production, for example
+use_mock_client = !Rails.env.production?
+PorkyLib::Config.configure(aws_region: ENV[AWS_REGION],
+                           aws_key_id: ENV[AWS_KEY_ID],
+                           aws_key_secret: ENV[AWS_KEY_SECRET],
+                           aws_client_mock: use_mock_client)
+PorkyLib::Config.initialize_aws
+```
+
+### Creating a New CMK
+To create a new customer master key (CMK) within AWS:
+```ruby
+# Where tags is a list of key/value pairs (i.e [{ key1: 'value1' }])
+# key_alias is an optional parameter, and if provided will create an alias with the provided value for the newly created key
+# key_rotation_enabled is an optional parameter, and if true will enable automatic key rotation for the new created key. Default is true.
+key_id = PorkyLib::Symmetric.instance.create_key(tags, key_alias, key_rotation_enabled)
+```
+
+### Creating an Alias for an Existing CMK
+To create a new alias for an existing customer master key (CMK) within AWS:
+```ruby
+# Where key_id is the AWS key ID or Amazon Resource Name (ARN)
+# key_alias is the value of the alias to create
+PorkyLib::Symmetric.instance.create_alias(key_id, key_alias)
+```
+
+### Enabling Key Rotation for an Existing CMK
+To create a new alias for an existing customer master key (CMK) within AWS:
+```ruby
+# Where key_id is the AWS key ID or Amazon Resource Name (ARN)
+PorkyLib::Symmetric.instance.enable_key_rotation(key_id)
+```
+
+### Encrypting Data
+To encrypt data:
+```ruby
+# Where data is the data to encrypt
+# cmk_key_id is the AWS key ID, Amazon Resource Name (ARN) or alias for the CMK to use to generate the data encryption key (DEK)
+# encryption_context is an optional parameter to provide additional authentication data for encrypting the DEK. Default is nil.
+[ciphertext_dek, ciphertext, nonce] = PorkyLib::Symmetric.instance.encrypt(data, cmk_key_id, encryption_context)
+```
+
+### Decrypting Data
+To decrypt data:
+```ruby
+# Where ciphertext_dek is the encrypted data encryption key (DEK)
+# ciphertext is the encrypted data to be decrypted
+# nonce is the nonce value associated with ciphertext
+# encryption_context is an optional parameter to provide additional authentication data for decrypting the DEK. Default is nil. Note, this must match the value that was used to encrypt.
+plaintext_data = PorkyLib::Symmetric.instance.decrypt(ciphertext_dek, ciphertext, nonce, encryption_context)
+```
 
 ## Development
 
-After checking out the repo, run `bundle install` to install dependencies. Then, run `rspec` to run the tests without coverage or
-`COVERAGE=true rspec` to run the tests with coverage.
+Development on this project should occur on separate feature branches and pull requests should be submitted. When submitting a
+pull request, the pull request comment template should be filled out as much as possible to ensure a quick review and increase
+the likelihood of the pull request being accepted.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number
-in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags,
-and push the `.gem` file to [rubygems.org](https://rubygems.org).
+### Running Tests
+
+```ruby
+rspec # Without code coverage
+COVERAGE=true rspec # with code coverage
+```
+
+## Contributing
+
+Bug reports and pull requests are welcome on GitHub at [https://github.com/Zetatango/porky_lib](https://github.com/Zetatango/porky_lib)

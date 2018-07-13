@@ -10,15 +10,32 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
       aws_key_secret: 'def456' }
   end
   let(:plaintext_data) { 'abc123' }
-  let(:partner_guid) { "p_#{SecureRandom.base64(16)}" }
-  let(:service_name) { 'wile_e' }
+  let(:default_tags) do
+    [
+      { key1: 'value 1' },
+      { key2: 'value 2' }
+    ]
+  end
   let(:default_key_id) { 'alias/zetatango' }
+  let(:default_encryption_context) do
+    {
+      encryptionContextKey: 'encryption context value'
+    }
+  end
   let(:bad_key_id) { 'alias/bad_key' }
-  let(:bad_partner_guid) { 'bad_value' }
-  let(:bad_service_name) { 'bad_value' }
+  let(:bad_tags) do
+    [
+      { key1: 'bad_value' }
+    ]
+  end
   let(:key_alias) { 'alias/new_key' }
   let(:bad_alias) { 'alias/aws' }
   let(:dup_alias) { 'alias/dup' }
+  let(:bad_encryption_context) do
+    {
+      encryptionContextKey: 'bad encryption context'
+    }
+  end
 
   before do
     PorkyLib::Config.configure(default_config)
@@ -26,6 +43,13 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
   end
 
   it 'Encrypt returns non-null values for ciphertext key, ciphertext data, and nonce' do
+    key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id, default_encryption_context)
+    expect(key).not_to be nil
+    expect(data).not_to be nil
+    expect(nonce).not_to be nil
+  end
+
+  it 'Encrypt returns non-null values with no encryption context for ciphertext key, ciphertext data, and nonce' do
     key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id)
     expect(key).not_to be nil
     expect(data).not_to be nil
@@ -34,79 +58,92 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
 
   it 'Encrypt with bad CMK key ID raises NotFoundException' do
     expect do
-      symmetric.encrypt(plaintext_data, bad_key_id)
+      symmetric.encrypt(plaintext_data, bad_key_id, default_encryption_context)
     end.to raise_error(Aws::KMS::Errors::NotFoundException)
   end
 
   it 'Decrypt returns an expected value' do
+    key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id, default_encryption_context)
+    result = symmetric.decrypt(key, data, nonce, default_encryption_context)
+    expect(result).to eq(plaintext_data)
+  end
+
+  it 'Decrypt with no encryption context returns an expected value' do
     key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id)
-    result = symmetric.decrypt(key, data, nonce)
+    result = symmetric.decrypt(key, data, nonce, nil)
     expect(result).to eq(plaintext_data)
   end
 
   it 'Decrypt with bad nonce raises CryptoError' do
-    key, data, = symmetric.encrypt(plaintext_data, default_key_id)
+    key, data, = symmetric.encrypt(plaintext_data, default_key_id, default_encryption_context)
     expect do
-      symmetric.decrypt(key, data, SecureRandom.hex(12))
+      symmetric.decrypt(key, data, SecureRandom.hex(12), default_encryption_context)
     end.to raise_error(RbNaCl::CryptoError)
   end
 
-  it 'Decrypt with bad ciphertext data raises CryptoError' do
-    key, _, nonce = symmetric.encrypt(plaintext_data, default_key_id)
+  it 'Decrypt with bad encryption context raises InvalidCiphertextException' do
+    key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id, default_encryption_context)
     expect do
-      symmetric.decrypt(key, SecureRandom.base64(32), nonce)
+      symmetric.decrypt(key, data, nonce, bad_encryption_context)
+    end.to raise_error(Aws::KMS::Errors::InvalidCiphertextException)
+  end
+
+  it 'Decrypt with bad ciphertext data raises CryptoError' do
+    key, _, nonce = symmetric.encrypt(plaintext_data, default_key_id, default_encryption_context)
+    expect do
+      symmetric.decrypt(key, SecureRandom.base64(32), nonce, default_encryption_context)
     end.to raise_error(RbNaCl::CryptoError)
   end
 
   it 'Decrypt with slightly modified data raises CryptoError' do
-    key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id)
+    key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id, default_encryption_context)
     data_bytes = data.unpack('c*')
     data_bytes[0] = data_bytes[0] + 1
     data = data_bytes.pack('c*')
     expect do
-      symmetric.decrypt(key, data, nonce)
+      symmetric.decrypt(key, data, nonce, default_encryption_context)
     end.to raise_error(RbNaCl::CryptoError)
   end
 
   it 'Decrypt with bad ciphertext key raises InvalidCiphertextException' do
-    _, data, nonce = symmetric.encrypt(plaintext_data, default_key_id)
+    _, data, nonce = symmetric.encrypt(plaintext_data, default_key_id, default_encryption_context)
     expect do
-      symmetric.decrypt(SecureRandom.base64(32), data, nonce)
+      symmetric.decrypt(SecureRandom.base64(32), data, nonce, default_encryption_context)
     end.to raise_error(Aws::KMS::Errors::InvalidCiphertextException)
   end
 
   it 'Create key returns non-null value for key ID' do
-    key_id = symmetric.create_key(partner_guid, service_name, key_alias)
+    key_id = symmetric.create_key(default_tags, key_alias)
     expect(key_id).not_to be nil
   end
 
   it 'Create key raises TagException for invalid tags' do
     expect do
-      symmetric.create_key(bad_partner_guid, bad_service_name, key_alias)
+      symmetric.create_key(bad_tags, key_alias)
     end.to raise_error(Aws::KMS::Errors::TagException)
   end
 
   it 'Create key raises InvalidAliasNameException for invalid alias name' do
     expect do
-      symmetric.create_key(partner_guid, service_name, bad_alias)
+      symmetric.create_key(default_tags, bad_alias)
     end.to raise_error(Aws::KMS::Errors::InvalidAliasNameException)
   end
 
   it 'Create key raises AlreadyExistsException for duplicate alias name' do
     expect do
-      symmetric.create_key(partner_guid, service_name, dup_alias)
+      symmetric.create_key(default_tags, dup_alias)
     end.to raise_error(Aws::KMS::Errors::AlreadyExistsException)
   end
 
   it 'Create alias raise NotFoundException for unknown CMK key id' do
     expect do
-      symmetric.create_alias(bad_key_id, key_alias, partner_guid, service_name)
+      symmetric.create_alias(bad_key_id, key_alias)
     end.to raise_error(Aws::KMS::Errors::NotFoundException)
   end
 
   it 'Enable key rotation raise NotFoundException for unknown CMK key id' do
     expect do
-      symmetric.enable_key_rotation(bad_key_id, partner_guid, service_name)
+      symmetric.enable_key_rotation(bad_key_id)
     end.to raise_error(Aws::KMS::Errors::NotFoundException)
   end
 
