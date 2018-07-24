@@ -51,11 +51,9 @@ class PorkyLib::Symmetric
 
   def decrypt_data_encryption_key(ciphertext_key, encryption_context = nil)
     PorkyLib::Config.logger.info('Decrypting data encryption key')
-    resp = {}
-    resp = client.decrypt(ciphertext_blob: ciphertext_key, encryption_context: encryption_context) if encryption_context
-    resp = client.decrypt(ciphertext_blob: ciphertext_key) unless encryption_context
 
-    resp.to_h[:plaintext]
+    return client.decrypt(ciphertext_blob: ciphertext_key, encryption_context: encryption_context).to_h[:plaintext] if encryption_context
+    client.decrypt(ciphertext_blob: ciphertext_key).to_h[:plaintext]
   end
 
   def encrypt(data, cmk_key_id, ciphertext_dek = nil, encryption_context = nil)
