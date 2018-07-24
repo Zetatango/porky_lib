@@ -67,9 +67,8 @@ class PorkyLib::Symmetric
     # Initialize the box
     secret_box = RbNaCl::SecretBox.new(plaintext_key)
 
-    # rubocop:disable Lint/UselessAssignment
-    plaintext_key = secure_delete_plaintext_key(plaintext_key.bytesize)
-    # rubocop:enable Lint/UselessAssignment
+    # Securely delete the plaintext value from memory
+    plaintext_key.replace(secure_delete_plaintext_key(plaintext_key.bytesize))
 
     # First, make a nonce: A single-use value never repeated under the same key
     # The nonce isn't secret, and can be sent with the ciphertext.
@@ -91,9 +90,8 @@ class PorkyLib::Symmetric
 
     secret_box = RbNaCl::SecretBox.new(plaintext_key)
 
-    # rubocop:disable Lint/UselessAssignment
-    plaintext_key = secure_delete_plaintext_key(plaintext_key.bytesize)
-    # rubocop:enable Lint/UselessAssignment
+    # Securely delete the plaintext value from memory
+    plaintext_key.replace(secure_delete_plaintext_key(plaintext_key.bytesize))
 
     PorkyLib::Config.logger.info('Beginning decryption')
     result = secret_box.decrypt(nonce, ciphertext)
