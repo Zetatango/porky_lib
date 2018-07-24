@@ -40,24 +40,37 @@ class PorkyLib::Symmetric
     client.create_alias(target_key_id: key_id, alias_name: key_alias)
   end
 
-  def encrypt(data, cmk_key_id, encryption_context = nil)
-    return if data.nil? || cmk_key_id.nil?
-
-    # Generate a new data encryption key
+  def generate_data_encryption_key(cmk_key_id, encryption_context = nil)
     PorkyLib::Config.logger.info('Generating new data encryption key')
-
     resp = {}
     resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC, encryption_context: encryption_context) if encryption_context
     resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC) unless encryption_context
 
-    plaintext_key = resp.to_h[:plaintext]
-    ciphertext_key = resp.to_h[:ciphertext_blob]
+    [resp.to_h[:plaintext], resp.to_h[:ciphertext_blob]]
+  end
+
+  def decrypt_data_encryption_key(ciphertext_key, encryption_context = nil)
+    PorkyLib::Config.logger.info('Decrypting data encryption key')
+    resp = {}
+    resp = client.decrypt(ciphertext_blob: ciphertext_key, encryption_context: encryption_context) if encryption_context
+    resp = client.decrypt(ciphertext_blob: ciphertext_key) unless encryption_context
+
+    resp.to_h[:plaintext]
+  end
+
+  def encrypt(data, cmk_key_id, ciphertext_dek = nil, encryption_context = nil)
+    return if data.nil? || cmk_key_id.nil?
+
+    # Generate a new data encryption key or decrypt existing key, if provided
+    plaintext_key = decrypt_data_encryption_key(ciphertext_dek, encryption_context) if ciphertext_dek
+    ciphertext_key = ciphertext_dek if ciphertext_dek
+    plaintext_key, ciphertext_key = generate_data_encryption_key(cmk_key_id, encryption_context) unless ciphertext_dek
 
     # Initialize the box
     secret_box = RbNaCl::SecretBox.new(plaintext_key)
 
     # rubocop:disable Lint/UselessAssignment
-    plaintext_key = "\0" * plaintext_key.bytesize
+    plaintext_key = secure_delete_plaintext_key(plaintext_key.bytesize)
     # rubocop:enable Lint/UselessAssignment
 
     # First, make a nonce: A single-use value never repeated under the same key
@@ -76,23 +89,21 @@ class PorkyLib::Symmetric
     return if ciphertext.nil? || ciphertext_dek.nil? || nonce.nil?
 
     # Decrypt the data encryption key
-    PorkyLib::Config.logger.info('Decrypting data encryption key')
-
-    resp = {}
-    resp = client.decrypt(ciphertext_blob: ciphertext_dek, encryption_context: encryption_context) if encryption_context
-    resp = client.decrypt(ciphertext_blob: ciphertext_dek) unless encryption_context
-
-    plaintext_key = resp.to_h[:plaintext]
+    plaintext_key = decrypt_data_encryption_key(ciphertext_dek, encryption_context)
 
     secret_box = RbNaCl::SecretBox.new(plaintext_key)
 
     # rubocop:disable Lint/UselessAssignment
-    plaintext_key = "\0" * plaintext_key.bytesize
+    plaintext_key = secure_delete_plaintext_key(plaintext_key.bytesize)
     # rubocop:enable Lint/UselessAssignment
 
     PorkyLib::Config.logger.info('Beginning decryption')
     result = secret_box.decrypt(nonce, ciphertext)
     PorkyLib::Config.logger.info('Decryption complete')
     result
+  end
+
+  def secure_delete_plaintext_key(length)
+    "\0" * length
   end
 end
