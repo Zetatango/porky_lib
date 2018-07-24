@@ -71,8 +71,9 @@ To encrypt data:
 ```ruby
 # Where data is the data to encrypt
 # cmk_key_id is the AWS key ID, Amazon Resource Name (ARN) or alias for the CMK to use to generate the data encryption key (DEK)
+# ciphertext_dek is an optional parameter to specify the data encryption key to use to encrypt the data. If not provided, a new data encryption key will be generated. Default is nil.
 # encryption_context is an optional parameter to provide additional authentication data for encrypting the DEK. Default is nil.
-[ciphertext_dek, ciphertext, nonce] = PorkyLib::Symmetric.instance.encrypt(data, cmk_key_id, encryption_context)
+[ciphertext_dek, ciphertext, nonce] = PorkyLib::Symmetric.instance.encrypt(data, cmk_key_id, ciphertext_dek, encryption_context)
 ```
 
 ### Decrypting Data
@@ -83,6 +84,29 @@ To decrypt data:
 # nonce is the nonce value associated with ciphertext
 # encryption_context is an optional parameter to provide additional authentication data for decrypting the DEK. Default is nil. Note, this must match the value that was used to encrypt.
 plaintext_data = PorkyLib::Symmetric.instance.decrypt(ciphertext_dek, ciphertext, nonce, encryption_context)
+```
+
+### Generating Data Encryption Keys
+To generate a new data encryption key:
+```ruby
+# Where cmk_key_id is the AWS key ID, Amazon Resource Name (ARN) or alias for the CMK to use to generate the data encryption key (DEK)
+# encryption_context is an optional parameter to provide additional authentication data for encrypting the DEK. Default is nil.
+plaintext_key, ciphertext_key = PorkyLib::Symmetric.instance.generate_data_encryption_key(cmk_key_id, encryption_context)
+```
+
+### Decrypting Data Encryption Keys
+To decrypt an existing ciphertext data encryption key:
+```ruby
+# Where ciphertext_key is the data encryption key, encrypted by a CMK within your AWS environment.
+# encryption_context is an optional parameter to provide additional authentication data for encrypting the DEK. Default is nil.
+plaintext_key = PorkyLib::Symmetric.instance.generate_data_encryption_key(ciphertext_key, encryption_context)
+```
+
+### Securely Deleting Plaintext Key From Memory
+To securely delete the plaintext key from memory:
+```ruby
+# Where length is the number of bytes of the plaintext key (i.e. plaintext_key.bytesize)
+plaintext_key = PorkyLib::Symmetric.instance.secure_delete_plaintext_key(plaintext_key.bytesize) 
 ```
 
 ## Development
