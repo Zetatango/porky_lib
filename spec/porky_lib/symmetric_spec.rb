@@ -170,8 +170,11 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
 
   it 'Securely deleting plaintext key returns a string of null characters matching the length of the key' do
     plaintext_key, = symmetric.generate_data_encryption_key(default_key_id, default_encryption_context)
-    plaintext_key = symmetric.secure_delete_plaintext_key(plaintext_key.bytesize)
+    obj_id = plaintext_key.object_id
+    plaintext_key.replace(symmetric.secure_delete_plaintext_key(plaintext_key.bytesize))
     expect(plaintext_key).to eq("\0" * data_encryption_key_length)
+    expect(plaintext_key.object_id).to eq(obj_id)
+    expect(ObjectSpace._id2ref(plaintext_key.object_id)).to eq("\0" * data_encryption_key_length)
   end
 
   it 'Using mock client in test environment' do
