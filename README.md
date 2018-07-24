@@ -102,6 +102,13 @@ To decrypt an existing ciphertext data encryption key:
 plaintext_key = PorkyLib::Symmetric.instance.generate_data_encryption_key(ciphertext_key, encryption_context)
 ```
 
+### Securely Deleting Plaintext Key From Memory
+To securely delete the plaintext key from memory:
+```ruby
+# Where length is the number of bytes of the plaintext key (i.e. plaintext_key.bytesize)
+plaintext_key = PorkyLib::Symmetric.instance.secure_delete_plaintext_key(plaintext_key.bytesize) 
+```
+
 ## Development
 
 Development on this project should occur on separate feature branches and pull requests should be submitted. When submitting a
