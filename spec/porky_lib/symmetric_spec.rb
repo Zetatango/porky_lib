@@ -177,6 +177,14 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
     expect(ObjectSpace._id2ref(plaintext_key.object_id)).to eq("\0" * data_encryption_key_length)
   end
 
+  it 'Alias exists returns true if a given CMK alias already exists' do
+    expect(symmetric.cmk_alias_exists?(key_alias)).to be true
+  end
+
+  it 'Alias exists returns false if a given CMK alias does not already exist' do
+    expect(symmetric.cmk_alias_exists?(bad_alias)).to be false
+  end
+
   it 'Using mock client in test environment' do
     expect(symmetric.client.inspect).to eq('#<Aws::KMS::Client (mocked)>')
   end

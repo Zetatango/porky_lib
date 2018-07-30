@@ -106,7 +106,14 @@ plaintext_key = PorkyLib::Symmetric.instance.generate_data_encryption_key(cipher
 To securely delete the plaintext key from memory:
 ```ruby
 # Where length is the number of bytes of the plaintext key (i.e. plaintext_key.bytesize)
-plaintext_key = PorkyLib::Symmetric.instance.secure_delete_plaintext_key(plaintext_key.bytesize) 
+plaintext_key.replace(PorkyLib::Symmetric.instance.secure_delete_plaintext_key(plaintext_key.bytesize))
+```
+
+### Check If An Alias Exists
+To verify whether an alias exists or not:
+```ruby
+# Where key_alias is the alias name to verify
+alias_exists = PorkyLib::Symmetric.instance.cmk_alias_exists?(key_alias) 
 ```
 
 ## Development

@@ -41,6 +41,23 @@ class Aws::KMS::Client
     raise Aws::KMS::Errors::NotFoundException.new(nil, nil) if target_key_id.include?(MOCK_NOT_FOUND_KEY_ID)
   end
 
+  def list_aliases
+    {
+      aliases: [
+        {
+          alias_arn: 'arn:aws:kms:us-east-2:111122223333:alias/example1',
+          alias_name: 'alias/example1',
+          target_key_id: "4da1e216-62d0-46c5-a7c0-5f3a3d2f8046"
+        },
+        {
+          alias_arn: 'arn:aws:kms:us-east-2:444455556666:alias/new_key',
+          alias_name: 'alias/new_key',
+          target_key_id: "4da1e216-62d0-46c5-a7c0-5f3a3d2f8046"
+        }
+      ]
+    }
+  end
+
   def generate_data_key(key_id:, key_spec:, encryption_context: nil)
     raise Aws::KMS::Errors::InvalidKeyUsageException.new(nil, nil) unless key_spec == 'AES_256'
     raise Aws::KMS::Errors::NotFoundException.new(nil, nil) if key_id.include?(MOCK_NOT_FOUND_KEY_ID)
