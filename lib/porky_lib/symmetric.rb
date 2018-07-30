@@ -30,6 +30,15 @@ class PorkyLib::Symmetric
     key_id
   end
 
+  def cmk_alias_exists?(key_alias)
+    alias_list = client.list_aliases.to_h[:aliases]
+    alias_list.each do |item|
+      return true if item[:alias_name] == key_alias
+    end
+
+    false
+  end
+
   def enable_key_rotation(key_id)
     PorkyLib::Config.logger.info("Enabling automatic key rotation for master key: '#{key_id}'")
     client.enable_key_rotation(key_id: key_id)
