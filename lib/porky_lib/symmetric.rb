@@ -40,12 +40,12 @@ class PorkyLib::Symmetric
   end
 
   def enable_key_rotation(key_id)
-    PorkyLib::Config.logger.info("Enabling automatic key rotation for master key: '#{key_id}'")
+    PorkyLib::Config.logger.info("Enabling automatic key rotation for master key")
     client.enable_key_rotation(key_id: key_id)
   end
 
   def create_alias(key_id, key_alias)
-    PorkyLib::Config.logger.info("Setting alias as '#{key_alias}' for master key: '#{key_id}'")
+    PorkyLib::Config.logger.info("Setting alias for master key")
     client.create_alias(target_key_id: key_id, alias_name: key_alias)
   end
 
