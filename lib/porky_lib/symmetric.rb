@@ -17,7 +17,6 @@ class PorkyLib::Symmetric
   end
 
   def create_key(tags, key_alias = nil, key_rotation_enabled = true)
-    PorkyLib::Config.logger.info("Creating a new master key")
     resp = client.create_key(key_usage: CMK_KEY_USAGE, origin: CMK_KEY_ORIGIN, tags: tags)
     key_id = resp.to_h[:key_metadata][:key_id]
 
@@ -40,17 +39,14 @@ class PorkyLib::Symmetric
   end
 
   def enable_key_rotation(key_id)
-    PorkyLib::Config.logger.info("Enabling automatic key rotation for master key")
     client.enable_key_rotation(key_id: key_id)
   end
 
   def create_alias(key_id, key_alias)
-    PorkyLib::Config.logger.info("Setting alias for master key")
     client.create_alias(target_key_id: key_id, alias_name: key_alias)
   end
 
   def generate_data_encryption_key(cmk_key_id, encryption_context = nil)
-    PorkyLib::Config.logger.info('Generating new data encryption key')
     resp = {}
     resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC, encryption_context: encryption_context) if encryption_context
     resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC) unless encryption_context
@@ -59,8 +55,6 @@ class PorkyLib::Symmetric
   end
 
   def decrypt_data_encryption_key(ciphertext_key, encryption_context = nil)
-    PorkyLib::Config.logger.info('Decrypting data encryption key')
-
     return client.decrypt(ciphertext_blob: ciphertext_key, encryption_context: encryption_context).to_h[:plaintext] if encryption_context
     client.decrypt(ciphertext_blob: ciphertext_key).to_h[:plaintext]
   end
@@ -85,9 +79,7 @@ class PorkyLib::Symmetric
     nonce = RbNaCl::Random.random_bytes(secret_box.nonce_bytes)
 
     # Encrypt a message with SecretBox
-    PorkyLib::Config.logger.info('Beginning encryption')
     ciphertext = secret_box.encrypt(nonce, data)
-    PorkyLib::Config.logger.info('Encryption complete')
     [ciphertext_key, ciphertext, nonce]
   end
 
@@ -102,9 +94,7 @@ class PorkyLib::Symmetric
     # Securely delete the plaintext value from memory
     plaintext_key.replace(secure_delete_plaintext_key(plaintext_key.bytesize))
 
-    PorkyLib::Config.logger.info('Beginning decryption')
     result = secret_box.decrypt(nonce, ciphertext)
-    PorkyLib::Config.logger.info('Decryption complete')
     result
   end
 
