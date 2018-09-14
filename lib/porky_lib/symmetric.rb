@@ -56,6 +56,7 @@ class PorkyLib::Symmetric
 
   def decrypt_data_encryption_key(ciphertext_key, encryption_context = nil)
     return client.decrypt(ciphertext_blob: ciphertext_key, encryption_context: encryption_context).to_h[:plaintext] if encryption_context
+
     client.decrypt(ciphertext_blob: ciphertext_key).to_h[:plaintext]
   end
 
@@ -94,8 +95,7 @@ class PorkyLib::Symmetric
     # Securely delete the plaintext value from memory
     plaintext_key.replace(secure_delete_plaintext_key(plaintext_key.bytesize))
 
-    result = secret_box.decrypt(nonce, ciphertext)
-    result
+    secret_box.decrypt(nonce, ciphertext)
   end
 
   def secure_delete_plaintext_key(length)
