@@ -6,21 +6,32 @@ require 'singleton'
 class PorkyLib::FileService
   include Singleton
 
+  class FileServiceError < StandardError; end
+
   def read(bucket_name, file_key, options = {})
     tempfile = Tempfile.new
-    s3.bucket(bucket_name).object(file_key).download_file(tempfile.path, options)
+
+    begin
+      s3.bucket(bucket_name).object(file_key).download_file(tempfile.path, options)
+    rescue Aws::Errors::ServiceError => e
+      raise FileServiceError, "Attempt to download a file from S3 failed.\n#{e.message}"
+    end
 
     decrypt_file_contents(tempfile)
   end
 
   def write(file, bucket_name, key_id, options = {})
-    return if file.nil? || bucket_name.nil? || key_id.nil?
+    raise FileServiceError, 'Invalid input one or more input values is nil' if file.nil? || bucket_name.nil? || key_id.nil?
 
     data = File.file?(file) ? File.read(file) : file
     file_key = SecureRandom.uuid
     tempfile = encrypt_file_contents(data, key_id, file_key)
 
-    perform_upload(bucket_name, file_key, tempfile, options)
+    begin
+      perform_upload(bucket_name, file_key, tempfile, options)
+    rescue Aws::Errors::ServiceError => e
+      raise FileServiceError, "Attempt to upload a file to S3 failed.\n#{e.message}"
+    end
 
     # Remove tempfile from disk
     tempfile.unlink
