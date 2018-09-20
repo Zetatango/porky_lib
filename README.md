@@ -116,6 +116,22 @@ To verify whether an alias exists or not:
 alias_exists = PorkyLib::Symmetric.instance.cmk_alias_exists?(key_alias) 
 ```
 
+### To Read From AWS S3
+```ruby
+# Where bucket_name is the name of the S3 bucket to read from
+# file_key is file identifier of the file/data that was written to S3.
+file_data = PorkyLib::FileService.read(bucket_name, file_key)
+```
+
+### To Write To AWS S3
+```ruby
+# Where file is the data to encrypt and upload to S3 (can be raw data or path to a file on disk)
+# bucket_name is the name of the S3 bucket to write to
+# key_id is the ID of the CMK to use to generate a data encryption key to encrypt the file data
+# options is an optional parameter for specifying optional metadata about the file
+file_key = PorkyLib::FileService.write(file, bucket_name, key_id, options)
+```
+
 ## Development
 
 Development on this project should occur on separate feature branches and pull requests should be submitted. When submitting a

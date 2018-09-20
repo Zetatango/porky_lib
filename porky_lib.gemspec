@@ -36,6 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'timecop'
 
   spec.add_dependency 'aws-sdk-kms'
+  spec.add_dependency 'aws-sdk-s3'
   spec.add_dependency 'msgpack'
   spec.add_dependency 'rbnacl-libsodium'
 end

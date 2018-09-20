@@ -7,7 +7,8 @@ RSpec.describe PorkyLib::Config, type: :request do
     { aws_region: '',
       aws_key_id: '',
       aws_key_secret: '',
-      aws_client_mock: true }
+      aws_client_mock: true,
+      max_file_size: 0 }
   end
 
   before do
