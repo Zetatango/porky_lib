@@ -5,12 +5,14 @@ class PorkyLib::Config
   @aws_key_id = ''
   @aws_key_secret = ''
   @aws_client_mock = false
+  @max_file_size = 0
 
   @config = {
     aws_region: @aws_region,
     aws_key_id: @aws_key_id,
     aws_key_secret: @aws_key_secret,
-    aws_client_mock: @aws_client_mock
+    aws_client_mock: @aws_client_mock,
+    max_file_size: @max_file_size
   }
 
   @allowed_config_keys = @config.keys

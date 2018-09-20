@@ -7,7 +7,8 @@ RSpec.describe PorkyLib::FileService, type: :request do
   let(:default_config) do
     { aws_region: 'us-east-1',
       aws_key_id: 'abc',
-      aws_key_secret: '123' }
+      aws_key_secret: '123',
+      max_file_size: 10 * 1024 * 1024 }
   end
   let(:bucket_name) { 'porky_bucket' }
   let(:default_key_id) { 'alias/porky' }
@@ -27,6 +28,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
       stub_responses: {
         get_object: {
           body: ciphertext_data
+        },
+        head_object: {
+          content_length: ciphertext_data.bytesize
         }
       }
     }
@@ -40,6 +44,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
       stub_responses: {
         get_object: {
           body: ciphertext_data_large
+        },
+        head_object: {
+          content_length: ciphertext_data_large.bytesize
         }
       }
     }
@@ -75,7 +82,15 @@ RSpec.describe PorkyLib::FileService, type: :request do
   end
 
   it 'write large file to S3' do
-    file_key = file_service.write(write_test_file("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext").path,
+    PorkyLib::Config.configure(max_file_size: 10 * 1024)
+    expect do
+      file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).path,
+                         bucket_name, default_key_id)
+    end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
+  end
+
+  it 'write file too large to S3' do
+    file_key = file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).path,
                                   bucket_name, default_key_id)
     expect(file_key).not_to be_nil
   end
@@ -100,6 +115,16 @@ RSpec.describe PorkyLib::FileService, type: :request do
 
     plaintext = file_service.read(bucket_name, file_key)
     expect(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).to eq(plaintext)
+  end
+
+  it 'read encrypted data too large from S3' do
+    stub_large_file
+    file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+
+    PorkyLib::Config.configure(max_file_size: 10 * 1024)
+    expect do
+      file_service.read(bucket_name, file_key)
+    end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
   end
 
   it 'attempt to write with file nil raises FileServiceError' do
