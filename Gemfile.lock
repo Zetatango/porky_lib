@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    porky_lib (0.2.0)
+    porky_lib (0.2.1)
       aws-sdk-kms
       aws-sdk-s3
       msgpack
@@ -21,7 +21,7 @@ GEM
     aws-sdk-kms (1.9.0)
       aws-sdk-core (~> 3, >= 3.26.0)
       aws-sigv4 (~> 1.0)
-    aws-sdk-s3 (1.19.0)
+    aws-sdk-s3 (1.20.0)
       aws-sdk-core (~> 3, >= 3.26.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.0)
