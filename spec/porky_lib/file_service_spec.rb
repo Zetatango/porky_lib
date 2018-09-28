@@ -76,6 +76,11 @@ RSpec.describe PorkyLib::FileService, type: :request do
     expect(file_key).not_to be_nil
   end
 
+  it 'write encrypted data to S3 with directory' do
+    file_key = file_service.write(plaintext_data, bucket_name, default_key_id, directory: '/directory1/dirA')
+    expect(file_key).not_to be_nil
+  end
+
   it 'write file to S3' do
     file_key = file_service.write(write_test_file(plaintext_data).path, bucket_name, default_key_id)
     expect(file_key).not_to be_nil
@@ -104,6 +109,15 @@ RSpec.describe PorkyLib::FileService, type: :request do
 
   it 'read encrypted data from S3' do
     file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+
+    plaintext = file_service.read(bucket_name, file_key)
+    expect(plaintext_data).to eq(plaintext)
+  end
+
+  it 'read encrypted data from S3 with directory' do
+    dir_name = 'directory1/dirA'
+    file_key = file_service.write(plaintext_data, bucket_name, default_key_id, directory: dir_name)
+    expect(file_key).to include(dir_name)
 
     plaintext = file_service.read(bucket_name, file_key)
     expect(plaintext_data).to eq(plaintext)
