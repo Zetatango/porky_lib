@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'aws-sdk-kms'
-require 'rbnacl/libsodium'
+require 'rbnacl'
 require 'singleton'
 
 class PorkyLib::Symmetric
@@ -51,13 +51,14 @@ class PorkyLib::Symmetric
     resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC, encryption_context: encryption_context) if encryption_context
     resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC) unless encryption_context
 
-    [resp.to_h[:plaintext], resp.to_h[:ciphertext_blob]]
+    [resp.plaintext, resp.ciphertext_blob]
   end
 
   def decrypt_data_encryption_key(ciphertext_key, encryption_context = nil)
-    return client.decrypt(ciphertext_blob: ciphertext_key, encryption_context: encryption_context).to_h[:plaintext] if encryption_context
+    return client.decrypt(ciphertext_blob: ciphertext_key, encryption_context: encryption_context).plaintext if encryption_context
 
-    client.decrypt(ciphertext_blob: ciphertext_key).to_h[:plaintext]
+    resp = client.decrypt(ciphertext_blob: ciphertext_key)
+    resp.plaintext
   end
 
   def encrypt(data, cmk_key_id, ciphertext_dek = nil, encryption_context = nil)
@@ -71,9 +72,6 @@ class PorkyLib::Symmetric
     # Initialize the box
     secret_box = RbNaCl::SecretBox.new(plaintext_key)
 
-    # Securely delete the plaintext value from memory
-    plaintext_key.replace(secure_delete_plaintext_key(plaintext_key.bytesize))
-
     # First, make a nonce: A single-use value never repeated under the same key
     # The nonce isn't secret, and can be sent with the ciphertext.
     # The cipher instance has a nonce_bytes method for determining how many bytes should be in a nonce
@@ -81,6 +79,10 @@ class PorkyLib::Symmetric
 
     # Encrypt a message with SecretBox
     ciphertext = secret_box.encrypt(nonce, data)
+
+    # Securely delete the plaintext value from memory
+    plaintext_key.replace(secure_delete_plaintext_key(plaintext_key.bytesize))
+
     [ciphertext_key, ciphertext, nonce]
   end
 
@@ -89,13 +91,23 @@ class PorkyLib::Symmetric
 
     # Decrypt the data encryption key
     plaintext_key = decrypt_data_encryption_key(ciphertext_dek, encryption_context)
-
     secret_box = RbNaCl::SecretBox.new(plaintext_key)
+
+    should_reencrypt = false
+    begin
+      # Decrypt the message
+      message = secret_box.decrypt(nonce, ciphertext)
+    rescue RbNaCl::CryptoError
+      # For backwards compatibility due to a code error in a previous release
+      plaintext_key.replace(secure_delete_plaintext_key(plaintext_key.bytesize))
+      message = secret_box.decrypt(nonce, ciphertext)
+      should_reencrypt = true
+    end
 
     # Securely delete the plaintext value from memory
     plaintext_key.replace(secure_delete_plaintext_key(plaintext_key.bytesize))
 
-    secret_box.decrypt(nonce, ciphertext)
+    [message, should_reencrypt]
   end
 
   def secure_delete_plaintext_key(length)

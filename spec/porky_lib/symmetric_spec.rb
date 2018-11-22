@@ -43,6 +43,14 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
     PorkyLib::Config.initialize_aws
   end
 
+  def encrypt_with_bad_key
+    box = RbNaCl::SecretBox.new(("\0" * data_encryption_key_length).b)
+    nonce = RbNaCl::Random.random_bytes(box.nonce_bytes)
+    ciphertext = box.encrypt(nonce, plaintext_data)
+
+    [ciphertext, nonce]
+  end
+
   it 'Generate data encryption key returns non-null values for plaintext_key and ciphertext_key' do
     plaintext_key, ciphertext_key = symmetric.generate_data_encryption_key(default_key_id, default_encryption_context)
     expect(plaintext_key).not_to be nil
@@ -85,14 +93,16 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
 
   it 'Decrypt returns an expected value' do
     key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id, nil, default_encryption_context)
-    result = symmetric.decrypt(key, data, nonce, default_encryption_context)
+    result, should_reencrypt = symmetric.decrypt(key, data, nonce, default_encryption_context)
     expect(result).to eq(plaintext_data)
+    expect(should_reencrypt).to be_falsey
   end
 
   it 'Decrypt with no encryption context returns an expected value' do
     key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id)
-    result = symmetric.decrypt(key, data, nonce, nil)
+    result, should_reencrypt = symmetric.decrypt(key, data, nonce, nil)
     expect(result).to eq(plaintext_data)
+    expect(should_reencrypt).to be_falsey
   end
 
   it 'Decrypt with bad nonce raises CryptoError' do
@@ -112,7 +122,7 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
   it 'Decrypt with bad ciphertext data raises CryptoError' do
     key, _, nonce = symmetric.encrypt(plaintext_data, default_key_id, nil, default_encryption_context)
     expect do
-      symmetric.decrypt(key, SecureRandom.base64(32), nonce, default_encryption_context)
+      symmetric.decrypt(key, SecureRandom.base64(data_encryption_key_length), nonce, default_encryption_context)
     end.to raise_error(RbNaCl::CryptoError)
   end
 
@@ -129,8 +139,15 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
   it 'Decrypt with bad ciphertext key raises InvalidCiphertextException' do
     _, data, nonce = symmetric.encrypt(plaintext_data, default_key_id, nil, default_encryption_context)
     expect do
-      symmetric.decrypt(SecureRandom.base64(32), data, nonce, default_encryption_context)
+      symmetric.decrypt(SecureRandom.base64(data_encryption_key_length), data, nonce, default_encryption_context)
     end.to raise_error(Aws::KMS::Errors::InvalidCiphertextException)
+  end
+
+  it 'If data was encrypted incorrectly, decrypt and mark as should re-encrypt' do
+    ciphertext, nonce = encrypt_with_bad_key
+    message, should_reencrypt = symmetric.decrypt([nil, nil, SecureRandom.random_bytes(data_encryption_key_length)].to_msgpack.reverse, ciphertext, nonce, nil)
+    expect(message).to eq(plaintext_data)
+    expect(should_reencrypt).to be_truthy
   end
 
   it 'Create key returns non-null value for key ID' do
