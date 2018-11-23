@@ -5,7 +5,8 @@ PATH
       aws-sdk-kms
       aws-sdk-s3
       msgpack
-      rbnacl
+      rbnacl (= 5.0.0)
+      rbnacl-libsodium
 
 GEM
   remote: https://rubygems.org/
@@ -47,8 +48,10 @@ GEM
     powerpack (0.1.2)
     rainbow (3.0.0)
     rake (12.3.1)
-    rbnacl (6.0.0)
+    rbnacl (5.0.0)
       ffi
+    rbnacl-libsodium (1.0.16)
+      rbnacl (>= 3.0.1)
     rspec (3.8.0)
       rspec-core (~> 3.8.0)
       rspec-expectations (~> 3.8.0)
