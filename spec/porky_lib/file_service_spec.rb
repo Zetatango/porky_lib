@@ -238,4 +238,10 @@ RSpec.describe PorkyLib::FileService, type: :request do
       file_service.read(bucket_name, default_key_id)
     end.to raise_exception(PorkyLib::FileService::FileServiceError)
   end
+
+  it 'attempt to overwrite an existing file with nil file_key raise FileServiceError' do
+    expect do
+      file_service.overwrite_file(plaintext_data, nil, bucket_name, default_key_id)
+    end.to raise_error(PorkyLib::FileService::FileServiceError)
+  end
 end
