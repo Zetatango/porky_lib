@@ -138,7 +138,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
   it 'overwrite large encrypted data to S3' do
     expect do
       file_service.overwrite_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"), default_file_key,
-                             bucket_name, default_key_id)
+                                  bucket_name, default_key_id)
     end.not_to raise_exception
   end
 
@@ -153,7 +153,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
     PorkyLib::Config.configure(max_file_size: 10 * 1024)
     expect do
       file_service.overwrite_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"), default_file_key,
-                             bucket_name, default_key_id)
+                                  bucket_name, default_key_id)
     end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
   end
 
