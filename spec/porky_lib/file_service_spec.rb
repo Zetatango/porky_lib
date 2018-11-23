@@ -15,6 +15,13 @@ RSpec.describe PorkyLib::FileService, type: :request do
   let(:plaintext_data) { 'abc123' }
   let(:ciphertext_data) do
     {
+      key: 'KrUyzr7rL4lYjuFqmeqzDGqG7Kktz6SeBCqiVbLXtWsgxMB5a3JvcC9zYWlsYauT',
+      data: 'Heqj1FnHmZqnKpws-_GgX1t_FgdCZA==',
+      nonce: 'XL09bELoWZ_7rzev9gSkFhBYsFdGETdL'
+    }.to_json
+  end
+  let(:ciphertext_data_reencrypt) do
+    {
       key: 'G2JpGKOwMKOiHl1vKbsbIE54j5E2UUXvkavDtIX4PfogxMB5a3JvcC9zYWlsYauT',
       data: 'SQmWQavlGC7FJGsg3M0IovBR38W7SQ==',
       nonce: 'BXFEzR4U1u_muThKSOYdaOP9JHUhlKIZ'
@@ -31,6 +38,20 @@ RSpec.describe PorkyLib::FileService, type: :request do
         },
         head_object: {
           content_length: ciphertext_data.bytesize
+        }
+      }
+    }
+  end
+
+  def stub_data_to_be_reencrypted
+    Aws.config[:s3].delete(:stub_responses)
+    Aws.config[:s3] = {
+      stub_responses: {
+        get_object: {
+          body: ciphertext_data_reencrypt
+        },
+        head_object: {
+          content_length: ciphertext_data_reencrypt.bytesize
         }
       }
     }
@@ -110,8 +131,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
   it 'read encrypted data from S3' do
     file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
 
-    plaintext, = file_service.read(bucket_name, file_key)
+    plaintext, should_reencrypt = file_service.read(bucket_name, file_key)
     expect(plaintext_data).to eq(plaintext)
+    expect(should_reencrypt).to be_falsey
   end
 
   it 'read encrypted data from S3 with directory' do
@@ -119,8 +141,18 @@ RSpec.describe PorkyLib::FileService, type: :request do
     file_key = file_service.write(plaintext_data, bucket_name, default_key_id, directory: dir_name)
     expect(file_key).to include(dir_name)
 
-    plaintext, = file_service.read(bucket_name, file_key)
+    plaintext, should_reencrypt = file_service.read(bucket_name, file_key)
     expect(plaintext_data).to eq(plaintext)
+    expect(should_reencrypt).to be_falsey
+  end
+
+  it 'read encrypted data from S3 which should be re-encrypted' do
+    stub_data_to_be_reencrypted
+    file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+
+    plaintext, should_reencrypt = file_service.read(bucket_name, file_key)
+    expect(plaintext_data).to eq(plaintext)
+    expect(should_reencrypt).to be_truthy
   end
 
   it 'read large encrypted data from S3' do
