@@ -19,6 +19,7 @@ end
 require 'bundler/setup'
 require 'byebug'
 require 'logger'
+require 'msgpack'
 require 'porky_lib'
 
 PorkyLib::Config.configure(aws_client_mock: true)

@@ -110,7 +110,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
   it 'read encrypted data from S3' do
     file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
 
-    plaintext = file_service.read(bucket_name, file_key)
+    plaintext, = file_service.read(bucket_name, file_key)
     expect(plaintext_data).to eq(plaintext)
   end
 
@@ -119,7 +119,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
     file_key = file_service.write(plaintext_data, bucket_name, default_key_id, directory: dir_name)
     expect(file_key).to include(dir_name)
 
-    plaintext = file_service.read(bucket_name, file_key)
+    plaintext, = file_service.read(bucket_name, file_key)
     expect(plaintext_data).to eq(plaintext)
   end
 
@@ -127,7 +127,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
     stub_large_file
     file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
 
-    plaintext = file_service.read(bucket_name, file_key)
+    plaintext, = file_service.read(bucket_name, file_key)
     expect(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).to eq(plaintext)
   end
 

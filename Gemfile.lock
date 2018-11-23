@@ -1,10 +1,11 @@
 PATH
   remote: .
   specs:
-    porky_lib (0.2.2)
+    porky_lib (0.3.0)
       aws-sdk-kms
       aws-sdk-s3
       msgpack
+      rbnacl (= 5.0.0)
       rbnacl-libsodium
 
 GEM
@@ -12,17 +13,17 @@ GEM
   specs:
     ast (2.4.0)
     aws-eventstream (1.0.1)
-    aws-partitions (1.104.0)
-    aws-sdk-core (3.27.0)
+    aws-partitions (1.115.0)
+    aws-sdk-core (3.39.0)
       aws-eventstream (~> 1.0)
       aws-partitions (~> 1.0)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
-    aws-sdk-kms (1.9.0)
-      aws-sdk-core (~> 3, >= 3.26.0)
+    aws-sdk-kms (1.12.0)
+      aws-sdk-core (~> 3, >= 3.39.0)
       aws-sigv4 (~> 1.0)
-    aws-sdk-s3 (1.20.0)
-      aws-sdk-core (~> 3, >= 3.26.0)
+    aws-sdk-s3 (1.25.0)
+      aws-sdk-core (~> 3, >= 3.39.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.0)
     aws-sigv4 (1.0.3)
@@ -42,7 +43,7 @@ GEM
     json (2.1.0)
     msgpack (1.2.4)
     parallel (1.12.1)
-    parser (2.5.1.2)
+    parser (2.5.3.0)
       ast (~> 2.4.0)
     powerpack (0.1.2)
     rainbow (3.0.0)
@@ -68,14 +69,14 @@ GEM
     rspec-support (3.8.0)
     rspec_junit_formatter (0.4.1)
       rspec-core (>= 2, < 4, != 2.12.0)
-    rubocop (0.59.1)
+    rubocop (0.60.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
       parser (>= 2.5, != 2.5.1.1)
       powerpack (~> 0.1)
       rainbow (>= 2.2.2, < 4.0)
       ruby-progressbar (~> 1.7)
-      unicode-display_width (~> 1.0, >= 1.0.1)
+      unicode-display_width (~> 1.4.0)
     rubocop-rspec (1.29.1)
       rubocop (>= 0.58.0)
     rubocop_runner (2.1.0)
@@ -111,4 +112,4 @@ DEPENDENCIES
   timecop
 
 BUNDLED WITH
-   1.16.2
+   1.17.1
