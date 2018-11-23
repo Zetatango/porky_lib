@@ -12,6 +12,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
   end
   let(:bucket_name) { 'porky_bucket' }
   let(:default_key_id) { 'alias/porky' }
+  let(:default_file_key) { 'file_key' }
   let(:plaintext_data) { 'abc123' }
   let(:ciphertext_data) do
     {
@@ -128,6 +129,34 @@ RSpec.describe PorkyLib::FileService, type: :request do
     expect(file_key).not_to be_nil
   end
 
+  it 'overwrite encrypted data to S3' do
+    expect do
+      file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id)
+    end.not_to raise_exception
+  end
+
+  it 'overwrite large encrypted data to S3' do
+    expect do
+      file_service.overwrite_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"), default_file_key,
+                             bucket_name, default_key_id)
+    end.not_to raise_exception
+  end
+
+  it 'overwrite encrypted data to S3 with metadata' do
+    expect do
+      metadata = { content_type: 'test/data' }
+      file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id, metadata: metadata)
+    end.not_to raise_exception
+  end
+
+  it 'overwrite file too large to S3' do
+    PorkyLib::Config.configure(max_file_size: 10 * 1024)
+    expect do
+      file_service.overwrite_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"), default_file_key,
+                             bucket_name, default_key_id)
+    end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
+  end
+
   it 'read encrypted data from S3' do
     file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
 
@@ -200,6 +229,18 @@ RSpec.describe PorkyLib::FileService, type: :request do
     }
     expect do
       file_service.write(plaintext_data, bucket_name, default_key_id)
+    end.to raise_exception(PorkyLib::FileService::FileServiceError)
+  end
+
+  it 'attempt to overwrite to bucket without permission raises FileServiceError' do
+    Aws.config[:s3].delete(:stub_responses)
+    Aws.config[:s3] = {
+      stub_responses: {
+        put_object: 'Forbidden'
+      }
+    }
+    expect do
+      file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id)
     end.to raise_exception(PorkyLib::FileService::FileServiceError)
   end
 
