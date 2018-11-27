@@ -28,6 +28,13 @@ RSpec.describe PorkyLib::FileService, type: :request do
       nonce: 'BXFEzR4U1u_muThKSOYdaOP9JHUhlKIZ'
     }.to_json
   end
+  let(:metadata) do
+    {
+      report_type: 'business report',
+      report_date: Date.today.to_s,
+      extra_metadata: 'extra metadata info'
+    }
+  end
 
   before do
     PorkyLib::Config.configure(default_config)
@@ -200,6 +207,24 @@ RSpec.describe PorkyLib::FileService, type: :request do
     expect do
       file_service.read(bucket_name, file_key)
     end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
+  end
+
+  it 'file_contents contains associated metadata if provided' do
+    file_data = JSON.parse(ciphertext_data, symbolize_names: true)
+    file_contents = file_service.send(:file_contents, file_data[:key], file_data[:data], file_data[:nonce], metadata: metadata)
+    expect(JSON.parse(file_contents, symbolize_names: true)[:metadata]).to eq(metadata)
+  end
+
+  it 'file_contents does not contain metadata field if none provided' do
+    file_data = JSON.parse(ciphertext_data, symbolize_names: true)
+    file_contents = file_service.send(:file_contents, file_data[:key], file_data[:data], file_data[:nonce], {})
+    expect(JSON.parse(file_contents, symbolize_names: true)).not_to have_key(:metadata)
+  end
+
+  it 'file_contents does not contain metadata field if options is nil' do
+    file_data = JSON.parse(ciphertext_data, symbolize_names: true)
+    file_contents = file_service.send(:file_contents, file_data[:key], file_data[:data], file_data[:nonce], nil)
+    expect(JSON.parse(file_contents, symbolize_names: true)).not_to have_key(:metadata)
   end
 
   it 'attempt to write with file nil raises FileServiceError' do
