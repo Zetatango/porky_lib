@@ -30,7 +30,7 @@ class PorkyLib::FileService
 
     data = file_data(file)
     file_key = options.key?(:directory) ? "#{options[:directory]}/#{SecureRandom.uuid}" : SecureRandom.uuid
-    tempfile = encrypt_file_contents(data, key_id, file_key)
+    tempfile = encrypt_file_contents(data, key_id, file_key, options)
 
     begin
       perform_upload(bucket_name, file_key, tempfile, options)
@@ -49,7 +49,7 @@ class PorkyLib::FileService
     raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if file_size_invalid?(file)
 
     data = file_data(file)
-    tempfile = encrypt_file_contents(data, key_id, file_key)
+    tempfile = encrypt_file_contents(data, key_id, file_key, options)
 
     begin
       perform_upload(bucket_name, file_key, tempfile, options)
@@ -111,16 +111,26 @@ class PorkyLib::FileService
     PorkyLib::Symmetric.instance.decrypt(ciphertext_key, ciphertext, nonce)
   end
 
-  def encrypt_file_contents(file, key_id, file_key)
+  def encrypt_file_contents(file, key_id, file_key, options)
     ciphertext_key, ciphertext, nonce = PorkyLib::Symmetric.instance.encrypt(file, key_id)
+    write_tempfile(file_contents(ciphertext_key, ciphertext, nonce, options), file_key)
+  end
 
-    file_contents = {
+  def file_contents(ciphertext_key, ciphertext, nonce, options)
+    if options.is_a?(Hash) && options.key?(:metadata) && !options[:metadata].nil?
+      return {
+        key: Base64.urlsafe_encode64(ciphertext_key),
+        data: Base64.urlsafe_encode64(ciphertext),
+        nonce: Base64.urlsafe_encode64(nonce),
+        metadata: options[:metadata]
+      }.to_json
+    end
+
+    {
       key: Base64.urlsafe_encode64(ciphertext_key),
       data: Base64.urlsafe_encode64(ciphertext),
       nonce: Base64.urlsafe_encode64(nonce)
     }.to_json
-
-    write_tempfile(file_contents, file_key)
   end
 
   def write_tempfile(file_contents, file_key)
