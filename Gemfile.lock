@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    porky_lib (0.3.2)
+    porky_lib (0.3.3)
       aws-sdk-kms
       aws-sdk-s3
       msgpack
@@ -13,8 +13,8 @@ GEM
   specs:
     ast (2.4.0)
     aws-eventstream (1.0.1)
-    aws-partitions (1.117.0)
-    aws-sdk-core (3.40.0)
+    aws-partitions (1.118.0)
+    aws-sdk-core (3.41.0)
       aws-eventstream (~> 1.0)
       aws-partitions (~> 1.0)
       aws-sigv4 (~> 1.0)
