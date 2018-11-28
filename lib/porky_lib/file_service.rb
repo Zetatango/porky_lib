@@ -91,7 +91,7 @@ class PorkyLib::FileService
   def perform_upload(bucket_name, file_key, tempfile, options)
     obj = s3.bucket(bucket_name).object(file_key)
     if options.key?(:metadata)
-      obj.upload_file(tempfile.path, options[:metadata])
+      obj.upload_file(tempfile.path, metadata: options[:metadata])
     else
       obj.upload_file(tempfile.path)
     end
