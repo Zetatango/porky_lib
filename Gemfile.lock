@@ -1,20 +1,15 @@
 PATH
   remote: .
   specs:
-    porky_lib (0.4.0)
-      aws-sdk-kms
-      aws-sdk-s3
-      msgpack
-      rbnacl (= 5.0.0)
-      rbnacl-libsodium
+    porky_lib (0.4.1)
 
 GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.0)
     aws-eventstream (1.0.1)
-    aws-partitions (1.124.0)
-    aws-sdk-core (3.44.0)
+    aws-partitions (1.127.0)
+    aws-sdk-core (3.44.1)
       aws-eventstream (~> 1.0)
       aws-partitions (~> 1.0)
       aws-sigv4 (~> 1.0)
@@ -95,12 +90,17 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  aws-sdk-kms
+  aws-sdk-s3
   bundler
   bundler-audit
   byebug
   codecov
+  msgpack
   porky_lib!
   rake
+  rbnacl (= 5.0.0)
+  rbnacl-libsodium
   rspec
   rspec-collection_matchers
   rspec-mocks

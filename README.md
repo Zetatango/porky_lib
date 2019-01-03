@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/Zetatango/porky_lib.svg?style=svg&circle-token=f1a41896097b814585e5042a8e38425b4d1cdc0b)](https://circleci.com/gh/Zetatango/porky_lib) [![codecov](https://codecov.io/gh/Zetatango/porky_lib/branch/master/graph/badge.svg?token=WxED9350q4)](https://codecov.io/gh/Zetatango/porky_lib) [![Gem Version](https://badge.fury.io/rb/porky_lib.svg)](https://badge.fury.io/rb/porky_lib)
+[![CircleCI](https://circleci.com/gh/Zetatango/porky_lib.svg?style=svg&circle-token=f1a41896097b814585e5042a8e38425b4d1cdc0b)](https://circleci.com/gh/Zetatango/porky_lib) [![codecov](https://codecov.io/gh/Zetatango/porky_lib/branch/master/graph/badge.svg?token=WxED9350q4)](https://codecov.io/gh/Zetatango/porky_lib) [![Gem Version](https://badge.fury.io/rb/porky_lib.svg)](https://badge.fury.io/rb/porky_lib) [![Depfu](https://badges.depfu.com/badges/cbee343c363b7101657c0fc4bd5f551f/overview.svg)](https://depfu.com/github/Zetatango/porky_lib?project_id=6632)
 
 # PorkyLib
 
