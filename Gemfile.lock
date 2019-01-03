@@ -1,7 +1,12 @@
 PATH
   remote: .
   specs:
-    porky_lib (0.4.1)
+    porky_lib (0.4.2)
+      aws-sdk-kms
+      aws-sdk-s3
+      msgpack
+      rbnacl (= 5.0.0)
+      rbnacl-libsodium
 
 GEM
   remote: https://rubygems.org/
