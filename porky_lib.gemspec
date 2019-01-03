@@ -39,4 +39,10 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop_runner'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'timecop'
+
+  spec.add_dependency 'aws-sdk-kms'
+  spec.add_dependency 'aws-sdk-s3'
+  spec.add_dependency 'msgpack'
+  spec.add_dependency 'rbnacl', '=5.0.0'
+  spec.add_dependency 'rbnacl-libsodium'
 end
