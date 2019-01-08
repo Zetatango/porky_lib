@@ -61,6 +61,14 @@ class PorkyLib::FileService
     tempfile.unlink
   end
 
+  def list(bucket_name, prefix = nil)
+    raise FileServiceError, "Invalid input. 'bucket_name cannot be nil'" if bucket_name.nil?
+
+    s3.client.list_objects_v2(list_params(bucket_name, prefix)).to_h
+  rescue Aws::Errors::ServiceError => e
+    raise FileServiceError, "Attempt to list objects in bucket #{bucket_name} failed.\n#{e.message}"
+  end
+
   private
 
   def input_invalid?(file, bucket_name, key_id)
@@ -139,6 +147,12 @@ class PorkyLib::FileService
     tempfile.close
 
     tempfile
+  end
+
+  def list_params(bucket_name, prefix)
+    return { bucket: bucket_name } if prefix.nil?
+
+    { bucket: bucket_name, prefix: prefix }
   end
 
   def s3

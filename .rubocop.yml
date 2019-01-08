@@ -7,7 +7,7 @@ AllCops:
     - node_modules/**/*
     - output/**/*
     - vendor/**/*
-  TargetRubyVersion: 2.3.7
+  TargetRubyVersion: 2.5.3
   RSpec:
     Patterns:
       - _spec.rb
@@ -34,7 +34,7 @@ Metrics/MethodLength:
   Max: 50
 
 Style/StringLiterals:
-  Enabled: false
+  Enabled: true
 
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact

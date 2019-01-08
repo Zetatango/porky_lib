@@ -5,10 +5,10 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'porky_lib/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "porky_lib"
+  spec.name          = 'porky_lib'
   spec.version       = PorkyLib::VERSION
-  spec.authors       = ["Greg Fletcher"]
-  spec.email         = ["greg.fletcher@zetatango.com"]
+  spec.authors       = ['Greg Fletcher']
+  spec.email         = ['greg.fletcher@zetatango.com']
 
   spec.summary       = 'A library for cryptographic services using AWS KMS and RbNaCl'
   spec.homepage      = 'https://github.com/Zetatango/porky_lib'

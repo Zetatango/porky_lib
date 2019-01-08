@@ -15,7 +15,7 @@ RSpec.describe PorkyLib::Config, type: :request do
     PorkyLib::Config.configure(default_config)
   end
 
-  it "logger set directly is not nil" do
+  it 'logger set directly is not nil' do
     PorkyLib::Config.logger = Logger.new(STDOUT)
     expect(PorkyLib::Config.logger).not_to be nil
     expect(PorkyLib::Config.logger).to be_a(Logger)

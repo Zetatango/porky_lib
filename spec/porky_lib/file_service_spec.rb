@@ -35,6 +35,35 @@ RSpec.describe PorkyLib::FileService, type: :request do
       extra_metadata: 'extra metadata info'
     }
   end
+  let(:list_contents) do
+    [
+      {
+        etag: '\'70ee1738b6b21e2c8a43f3a5ab0eee71\'',
+        key: 'happyface.jpg',
+        last_modified: Time.parse('2014-11-21T19:40:05.000Z'),
+        size: 11,
+        storage_class: 'STANDARD'
+      },
+      {
+        etag: '\'becf17f89c30367a9a44495d62ed521a-1\'',
+        key: 'test.jpg',
+        last_modified: Time.parse('2014-05-02T04:51:50.000Z'),
+        size: 4_192_256,
+        storage_class: 'STANDARD'
+      }
+    ]
+  end
+  let(:list_contents_filtered) do
+    [
+      {
+        etag: '\'70ee1738b6b21e2c8a43f3a5ab0eee71\'',
+        key: 'happyface.jpg',
+        last_modified: Time.parse('2014-11-21T19:40:05.000Z'),
+        size: 11,
+        storage_class: 'STANDARD'
+      }
+    ]
+  end
 
   before do
     PorkyLib::Config.configure(default_config)
@@ -309,5 +338,78 @@ RSpec.describe PorkyLib::FileService, type: :request do
     expect do
       file_service.overwrite_file(plaintext_data, nil, bucket_name, default_key_id)
     end.to raise_error(PorkyLib::FileService::FileServiceError)
+  end
+
+  it 'attempt to list with bucket name nil raises FileServiceError' do
+    expect do
+      file_service.list(nil)
+    end.to raise_exception(PorkyLib::FileService::FileServiceError)
+  end
+
+  it 'attempt to list from bucket without permission raises FileServiceError' do
+    Aws.config[:s3].delete(:stub_responses)
+    Aws.config[:s3] = {
+      stub_responses: {
+        list_objects_v2: 'Forbidden'
+      }
+    }
+    expect do
+      file_service.list(bucket_name)
+    end.to raise_exception(PorkyLib::FileService::FileServiceError)
+  end
+
+  it 'attempt to list from bucket does not exist raises FileServiceError' do
+    Aws.config[:s3].delete(:stub_responses)
+    Aws.config[:s3] = {
+      stub_responses: {
+        list_objects_v2: 'NotFound'
+      }
+    }
+    expect do
+      file_service.list(bucket_name)
+    end.to raise_exception(PorkyLib::FileService::FileServiceError)
+  end
+
+  it 'list returns hash of all bucket objects' do
+    Aws.config[:s3].delete(:stub_responses)
+    stub_list
+
+    bucket_contents = file_service.list(bucket_name)
+    expect(bucket_contents).to eq(contents: list_contents, key_count: 2, max_keys: 1000)
+  end
+
+  it 'list with prefix returns hash of all bucket objects matching prefix' do
+    Aws.config[:s3].delete(:stub_responses)
+    stub_list_filtered
+
+    bucket_contents = file_service.list(bucket_name, 'happy')
+    expect(bucket_contents).to eq(contents: list_contents_filtered, prefix: 'happy', key_count: 1, max_keys: 1000)
+  end
+
+  private
+
+  def stub_list
+    Aws.config[:s3] = {
+      stub_responses: {
+        list_objects_v2: {
+          contents: list_contents,
+          key_count: 2,
+          max_keys: 1000
+        }
+      }
+    }
+  end
+
+  def stub_list_filtered
+    Aws.config[:s3] = {
+      stub_responses: {
+        list_objects_v2: {
+          contents: list_contents_filtered,
+          prefix: 'happy',
+          key_count: 1,
+          max_keys: 1000
+        }
+      }
+    }
   end
 end

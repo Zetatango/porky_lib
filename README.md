@@ -132,6 +132,13 @@ file_data = PorkyLib::FileService.read(bucket_name, file_key)
 file_key = PorkyLib::FileService.write(file, bucket_name, key_id, options)
 ```
 
+### To List Objects in an S3 bucket
+```ruby
+# Where bucket_name is the name of the S3 bucket to list from
+# prefix is an optional parameter to limit the objects returned to be only those objects whose file key starts with prefix. For example, this could be a directory name.
+bucket_contents = PorkyLib::FileService.list(bucket_name, prefix)
+``` 
+
 ## Development
 
 Development on this project should occur on separate feature branches and pull requests should be submitted. When submitting a

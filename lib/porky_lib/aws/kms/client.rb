@@ -47,12 +47,12 @@ class Aws::KMS::Client
         {
           alias_arn: 'arn:aws:kms:us-east-2:111122223333:alias/example1',
           alias_name: 'alias/example1',
-          target_key_id: "4da1e216-62d0-46c5-a7c0-5f3a3d2f8046"
+          target_key_id: '4da1e216-62d0-46c5-a7c0-5f3a3d2f8046'
         },
         {
           alias_arn: 'arn:aws:kms:us-east-2:444455556666:alias/new_key',
           alias_name: 'alias/new_key',
-          target_key_id: "4da1e216-62d0-46c5-a7c0-5f3a3d2f8046"
+          target_key_id: '4da1e216-62d0-46c5-a7c0-5f3a3d2f8046'
         }
       ]
     }
