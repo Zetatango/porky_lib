@@ -41,7 +41,7 @@ GEM
     jaro_winkler (1.5.2)
     jmespath (1.4.0)
     json (2.1.0)
-    msgpack (1.2.4)
+    msgpack (1.2.6)
     parallel (1.13.0)
     parser (2.6.0.0)
       ast (~> 2.4.0)
