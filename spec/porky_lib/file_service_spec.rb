@@ -45,7 +45,11 @@ RSpec.describe PorkyLib::FileService, type: :request do
           body: ciphertext_data
         },
         head_object: {
-          content_length: ciphertext_data.bytesize
+          content_length: ciphertext_data.bytesize,
+          metadata: {
+            "metadata1" => "value1",
+            "metadata2" => "value2"
+          }
         }
       }
     }
@@ -309,5 +313,34 @@ RSpec.describe PorkyLib::FileService, type: :request do
     expect do
       file_service.overwrite_file(plaintext_data, nil, bucket_name, default_key_id)
     end.to raise_error(PorkyLib::FileService::FileServiceError)
+  end
+
+  describe '#read_file_info' do
+    let(:s3_service) { instance_double(Aws::S3::Client) }
+
+    it 'raises a FileServiceError on S3 lib exception' do
+      allow(Aws::S3::Client).to receive(:new).and_return(s3_service)
+      allow(s3_service).to receive(:head_object).and_raise(Aws::S3::Errors::ServiceError.new(nil, 'Error'))
+      expect do
+        file_service.read_file_info(bucket_name, default_file_key)
+      end.to raise_error(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'logs the error' do
+      allow(Aws::S3::Client).to receive(:new).and_return(s3_service)
+      allow(s3_service).to receive(:head_object).and_raise(Aws::S3::Errors::ServiceError.new(nil, 'Error'))
+      begin
+        file_service.read_file_info(bucket_name, default_file_key)
+      rescue PorkyLib::FileService::FileServiceError => e
+        expect(e.message).to match(/\AFile info read for #{default_file_key} in S3 bucket #{bucket_name} failed:\s+/)
+      end
+    end
+
+    it 'returns file metadata' do
+      file_info = file_service.read_file_info(bucket_name, default_file_key)
+      expect(file_info).to have_key(:metadata)
+      expect(file_info[:metadata]).to have_key('metadata1')
+      expect(file_info[:metadata]).to have_key('metadata2')
+    end
   end
 end
