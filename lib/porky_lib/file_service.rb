@@ -9,6 +9,36 @@ class PorkyLib::FileService
   class FileServiceError < StandardError; end
   class FileSizeTooLargeError < StandardError; end
 
+  def read_file_info(bucket_name, file_key)
+    s3_client.head_object(
+      bucket: bucket_name,
+      key: file_key
+    ).to_h
+  rescue Aws::Errors::ServiceError => e
+    raise FileServiceError, "File info read for #{file_key} in S3 bucket #{bucket_name} failed: #{e.message}"
+  end
+
+  def copy_file(source_bucket, destination_bucket, file_key)
+    s3_client.copy_object(
+      bucket: destination_bucket,
+      copy_source: "#{source_bucket}/#{file_key}",
+      key: file_key
+    )
+
+    file_key
+  rescue Aws::Errors::ServiceError => e
+    raise FileServiceError, "File move #{file_key} from S3 bucket #{source_bucket} to #{destination_bucket} failed: #{e.message}"
+  end
+
+  def delete_file(bucket_name, file_key)
+    s3_client.delete_object(
+      bucket: bucket_name,
+      key: file_key
+    )
+  rescue Aws::Errors::ServiceError => e
+    raise FileServiceError, "File delete of #{file_key} from S3 bucket #{bucket_name} failed: #{e.message}"
+  end
+
   def read(bucket_name, file_key, options = {})
     tempfile = Tempfile.new
 
@@ -139,6 +169,10 @@ class PorkyLib::FileService
     tempfile.close
 
     tempfile
+  end
+
+  def s3_client
+    @s3_client ||= Aws::S3::Client.new
   end
 
   def s3
