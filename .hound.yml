@@ -1,0 +1,23 @@
+rubocop:
+  enabled: false
+
+go:
+  enabled: false
+
+swift:
+  enabled: false
+
+haml:
+  enabled: false
+
+reek:
+  enabled: true
+
+flog:
+  enabled: true
+
+erblint:
+  enabled: false
+
+scss:
+  enabled: false
