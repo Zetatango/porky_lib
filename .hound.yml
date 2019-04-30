@@ -13,9 +13,6 @@ haml:
 reek:
   enabled: true
 
-flog:
-  enabled: true
-
 erblint:
   enabled: false
 
