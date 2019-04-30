@@ -6,7 +6,7 @@ jobs:
     environment:
       - CODECOV_TOKEN: 4d03ca51-5054-4858-87c7-b37c376ffb6a
     docker:
-      - image: circleci/ruby:2.5.3
+      - image: circleci/ruby:2.6.3
 
     steps:
       - checkout
@@ -16,6 +16,14 @@ jobs:
           keys:
             - porky_lib-bundle-{{ checksum "Gemfile.lock" }}
             - porky_lib-bundle-
+
+      - run:
+          name: Install latest bundler
+          command: gem install bundler
+
+      - run:
+          name: Update bundler
+          command: bundle update --bundler
 
       - run:
           name: Bundle Install

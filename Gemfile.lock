@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    porky_lib (0.5.0)
+    porky_lib (0.6.0)
       aws-sdk-kms
       aws-sdk-s3
       msgpack
@@ -78,6 +78,8 @@ GEM
       rainbow (>= 2.2.2, < 4.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 1.6)
+    rubocop-performance (1.1.0)
+      rubocop (>= 0.67.0)
     rubocop-rspec (1.32.0)
       rubocop (>= 0.60.0)
     rubocop_runner (2.1.0)
@@ -112,13 +114,14 @@ DEPENDENCIES
   rspec-mocks
   rspec_junit_formatter
   rubocop
+  rubocop-performance
   rubocop-rspec
   rubocop_runner
   simplecov
   timecop
 
 RUBY VERSION
-   ruby 2.5.3p105
+   ruby 2.6.3p62
 
 BUNDLED WITH
-   1.17.3
+   2.0.1
