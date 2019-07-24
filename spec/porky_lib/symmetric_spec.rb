@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe PorkyLib::Symmetric, type: :request do
-  let(:symmetric) { PorkyLib::Symmetric.instance }
+  let(:symmetric) { described_class.instance }
   let(:default_config) do
     { aws_region: 'us-east-1',
       aws_key_id: 'abc123',

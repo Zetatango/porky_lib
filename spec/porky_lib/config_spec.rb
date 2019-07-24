@@ -12,35 +12,35 @@ RSpec.describe PorkyLib::Config, type: :request do
   end
 
   before do
-    PorkyLib::Config.configure(default_config)
+    described_class.configure(default_config)
   end
 
   it "logger set directly is not nil" do
-    PorkyLib::Config.logger = Logger.new(STDOUT)
-    expect(PorkyLib::Config.logger).not_to be nil
-    expect(PorkyLib::Config.logger).to be_a(Logger)
+    described_class.logger = Logger.new(STDOUT)
+    expect(described_class.logger).not_to be nil
+    expect(described_class.logger).to be_a(Logger)
   end
 
   it 'config does not set key/value for unknown key' do
-    PorkyLib::Config.configure(foo: 'bar')
-    expect(PorkyLib::Config.config).to eq(default_config)
+    described_class.configure(foo: 'bar')
+    expect(described_class.config).to eq(default_config)
   end
 
   it 'config sets aws_region to a known value' do
-    PorkyLib::Config.configure(aws_region: 'us-east-1')
-    expect(PorkyLib::Config.config).to have_key(:aws_region)
-    expect(PorkyLib::Config.config).to have_value('us-east-1')
+    described_class.configure(aws_region: 'us-east-1')
+    expect(described_class.config).to have_key(:aws_region)
+    expect(described_class.config).to have_value('us-east-1')
   end
 
   it 'config sets aws_key_id to a known value' do
-    PorkyLib::Config.configure(aws_key_id: 'ABC123')
-    expect(PorkyLib::Config.config).to have_key(:aws_key_id)
-    expect(PorkyLib::Config.config).to have_value('ABC123')
+    described_class.configure(aws_key_id: 'ABC123')
+    expect(described_class.config).to have_key(:aws_key_id)
+    expect(described_class.config).to have_value('ABC123')
   end
 
   it 'config sets aws_key_secret to a known value' do
-    PorkyLib::Config.configure(aws_key_secret: 's3cr3t')
-    expect(PorkyLib::Config.config).to have_key(:aws_key_secret)
-    expect(PorkyLib::Config.config).to have_value('s3cr3t')
+    described_class.configure(aws_key_secret: 's3cr3t')
+    expect(described_class.config).to have_key(:aws_key_secret)
+    expect(described_class.config).to have_value('s3cr3t')
   end
 end
