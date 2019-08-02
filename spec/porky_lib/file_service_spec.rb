@@ -316,6 +316,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
         }
       }
     end
+
     it 'read un-encrypted data from S3' do
       file_key = write_test_file(plaintext_data).path
 
@@ -475,14 +476,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
 
     it 'returns presigned post url and fields' do
       url, fields = file_service.presigned_post(bucket_name, default_file_key)
-      
+
       expect(url).to eq("https://s3.amazonaws.com/#{bucket_name}")
       expect(fields["key"]).to eq(default_file_key)
-      expect(fields["policy"]).not_to be_nil
-      expect(fields["x-amz-credential"]).not_to be_nil
-      expect(fields["x-amz-algorithm"]).not_to be_nil
-      expect(fields["x-amz-date"]).not_to be_nil
-      expect(fields["x-amz-signature"]).not_to be_nil
     end
 
     it 'raises a FileServiceError on S3 lib exception' do
