@@ -39,17 +39,17 @@ class PorkyLib::FileService
     raise FileServiceError, "File delete of #{file_key} from S3 bucket #{bucket_name} failed: #{e.message}"
   end
 
+  def read_raw_file(bucket_name, file_key, options = {})
+    tempfile = read_file(bucket_name, file_key, options)
+    tempfile.open
+    raw_file = tempfile.read
+    tempfile.close
+
+    raw_file
+  end
+
   def read(bucket_name, file_key, options = {})
-    tempfile = Tempfile.new
-
-    begin
-      object = s3.bucket(bucket_name).object(file_key)
-      raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if object.content_length > max_size
-
-      object.download_file(tempfile.path, options)
-    rescue Aws::Errors::ServiceError => e
-      raise FileServiceError, "Attempt to download a file from S3 failed.\n#{e.message}"
-    end
+    tempfile = read_file(bucket_name, file_key, options)
 
     decrypt_file_contents(tempfile)
   end
@@ -167,6 +167,21 @@ class PorkyLib::FileService
     tempfile = Tempfile.new(file_key)
     tempfile << file_contents
     tempfile.close
+
+    tempfile
+  end
+
+  def read_file(bucket_name, file_key, options = {})
+    tempfile = Tempfile.new
+
+    begin
+      object = s3.bucket(bucket_name).object(file_key)
+      raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if object.content_length > max_size
+
+      object.download_file(tempfile.path, options)
+    rescue Aws::Errors::ServiceError => e
+      raise FileServiceError, "Attempt to download a file from S3 failed.\n#{e.message}"
+    end
 
     tempfile
   end
