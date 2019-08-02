@@ -91,6 +91,16 @@ class PorkyLib::FileService
     tempfile.unlink
   end
 
+  def presigned_post(bucket_name, file_key)
+    bucket = s3.bucket(bucket_name)
+    post = bucket.presigned_post(
+      key: file_key
+    )
+    [post.url, post.fields]
+  rescue Aws::Errors::ServiceError => e
+    raise FileServiceError, "PresignedPost for #{file_key} from S3 bucket #{bucket_name} failed: #{e.message}"
+  end
+
   private
 
   def input_invalid?(file, bucket_name, key_id)
