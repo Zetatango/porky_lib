@@ -441,7 +441,38 @@ RSpec.describe PorkyLib::FileService, type: :request do
       begin
         file_service.presigned_post_url(bucket_name, default_file_key, 3600, default_key_id)
       rescue PorkyLib::FileService::FileServiceError => e
-        expect(e.message).to match(/\APresignedPost for #{default_file_key} from S3 bucket #{bucket_name} failed:\s+/)
+        expect(e.message).to match(/\APresignedPostUrl for #{default_file_key} from S3 bucket #{bucket_name} failed:\s+/)
+      end
+    end
+  end
+
+  describe '#presigned_get_url' do
+    let(:s3_object) { instance_double(Aws::S3::Object) }
+
+    it 'returns presigned get url and fields' do
+      url = file_service.presigned_get_url(bucket_name, default_file_key)
+      uri = URI.parse(url)
+
+      expect(uri.scheme).to eq('https')
+      expect(uri.path).to eq("/#{bucket_name}/#{default_file_key}")
+    end
+
+    it 'raises a FileServiceError on S3 lib exception' do
+      allow(Aws::S3::Object).to receive(:new).and_return(s3_object)
+      allow(s3_object).to receive(:presigned_url).and_raise(Aws::S3::Errors::ServiceError.new(nil, 'Error'))
+
+      expect do
+        file_service.presigned_get_url(bucket_name, default_file_key)
+      end.to raise_error(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'logs the error' do
+      allow(Aws::S3::Object).to receive(:new).and_return(s3_object)
+      allow(s3_object).to receive(:presigned_url).and_raise(Aws::S3::Errors::ServiceError.new(nil, 'Error'))
+      begin
+        file_service.presigned_get_url(bucket_name, default_file_key)
+      rescue PorkyLib::FileService::FileServiceError => e
+        expect(e.message).to match(/\APresignedGetUrl for #{default_file_key} from S3 bucket #{bucket_name} failed:\s+/)
       end
     end
   end
