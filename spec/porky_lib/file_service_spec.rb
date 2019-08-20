@@ -306,67 +306,6 @@ RSpec.describe PorkyLib::FileService, type: :request do
     end
   end
 
-  describe '#read_raw_file' do
-    before do
-      Aws.config[:s3] = {
-        stub_responses: {
-          get_object: {
-            body: plaintext_data
-          }
-        }
-      }
-    end
-
-    it 'read un-encrypted data from S3' do
-      file_key = write_test_file(plaintext_data).path
-
-      plaintext = file_service.read_raw_file(bucket_name, file_key)
-      expect(plaintext_data).to eq(plaintext)
-    end
-
-    it 'read large un-encrypted data from S3' do
-      stub_large_file(plaintext_data_large)
-      file_key = write_test_file(plaintext_data).path
-
-      plaintext = file_service.read_raw_file(bucket_name, file_key)
-      expect(plaintext_data_large).to eq(plaintext)
-    end
-
-    it 'read un-encrypted data too large from S3' do
-      stub_large_file(plaintext_data_large)
-      file_key = write_test_file(plaintext_data).path
-
-      PorkyLib::Config.configure(max_file_size: 10 * 1024)
-      expect do
-        file_service.read_raw_file(bucket_name, file_key)
-      end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
-    end
-
-    it 'attempt to read from bucket without permission raises FileServiceError' do
-      Aws.config[:s3].delete(:stub_responses)
-      Aws.config[:s3] = {
-        stub_responses: {
-          get_object: 'Forbidden'
-        }
-      }
-      expect do
-        file_service.read_raw_file(bucket_name, default_key_id)
-      end.to raise_exception(PorkyLib::FileService::FileServiceError)
-    end
-
-    it 'attempt to read from bucket does not exist raises FileServiceError' do
-      Aws.config[:s3].delete(:stub_responses)
-      Aws.config[:s3] = {
-        stub_responses: {
-          get_object: 'NotFound'
-        }
-      }
-      expect do
-        file_service.read_raw_file(bucket_name, default_key_id)
-      end.to raise_exception(PorkyLib::FileService::FileServiceError)
-    end
-  end
-
   describe '#file_contents' do
     it 'file_contents contains associated metadata if provided' do
       file_data = JSON.parse(ciphertext_data, symbolize_names: true)
