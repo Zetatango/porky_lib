@@ -91,14 +91,16 @@ class PorkyLib::FileService
     tempfile.unlink
   end
 
-  def presigned_post(bucket_name, file_key)
-    bucket = s3.bucket(bucket_name)
-    post = bucket.presigned_post(
-      key: file_key
-    )
-    [post.url, post.fields]
+  def presigned_post_url(bucket_name, file_name, expires_in, ssekms_key_id, options = {})
+    obj = s3.bucket(bucket_name).object(file_name)
+
+    obj.presigned_url(:put, #acl: "private",
+                      server_side_encryption: 'aws:kms',
+                      ssekms_key_id: ssekms_key_id,
+                      metadata: options[:metadata],
+                      expires_in: expires_in)
   rescue Aws::Errors::ServiceError => e
-    raise FileServiceError, "PresignedPost for #{file_key} from S3 bucket #{bucket_name} failed: #{e.message}"
+    raise FileServiceError, "PresignedPost for #{file_name} from S3 bucket #{bucket_name} failed: #{e.message}"
   end
 
   private
