@@ -205,4 +205,128 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
   it 'Using mock client in test environment' do
     expect(symmetric.client.inspect).to eq('#<Aws::KMS::Client (mocked)>')
   end
+
+  # rubocop:disable RSpec/MultipleExpectations
+  describe 'with track_statistics set to true' do
+    describe 'for #encrypt' do
+      it 'returns encryption statistics' do
+        key, data, nonce, stats = symmetric.encrypt(plaintext_data, default_key_id, nil, nil, true)
+        expect(key).not_to be_nil
+        expect(data).not_to be_nil
+        expect(nonce).not_to be_nil
+        expect(stats).not_to be_nil
+
+        expect(stats).to have_key(:generate_key)
+        expect(stats).not_to have_key(:decrypt_key)
+        expect(stats).to have_key(:encrypt)
+        expect(stats).to have_key(:clear_key)
+      end
+
+      it 'returns encryption statistics (passed in dek)' do
+        _, ciphertext_key = symmetric.generate_data_encryption_key(default_key_id, default_encryption_context)
+        key, data, nonce, stats = symmetric.encrypt(plaintext_data, default_key_id, ciphertext_key, default_encryption_context, true)
+        expect(key).to eq(ciphertext_key)
+        expect(data).not_to be_nil
+        expect(nonce).not_to be_nil
+        expect(stats).not_to be_nil
+
+        expect(stats).not_to have_key(:generate_key)
+        expect(stats).to have_key(:decrypt_key)
+        expect(stats).to have_key(:encrypt)
+        expect(stats).to have_key(:clear_key)
+      end
+    end
+
+    describe 'for #decrypt' do
+      it 'returns encryption statistics when track_statistics is set' do
+        key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id, nil, default_encryption_context)
+        result, should_reencrypt, stats = symmetric.decrypt(key, data, nonce, default_encryption_context, true)
+        expect(result).to eq(plaintext_data)
+        expect(should_reencrypt).to be_falsey
+        expect(stats).not_to be_nil
+
+        expect(stats).to have_key(:decrypt_key)
+        expect(stats).to have_key(:decrypt)
+        expect(stats).to have_key(:clear_key)
+      end
+
+      it 'raises exception on decrypt failure when track_statistics is set' do
+        key, data, = symmetric.encrypt(plaintext_data, default_key_id, nil, default_encryption_context)
+        expect do
+          symmetric.decrypt(key, data, SecureRandom.hex(12), default_encryption_context, true)
+        end.to raise_error(RbNaCl::CryptoError)
+      end
+    end
+  end
+  # rubocop:enable RSpec/MultipleExpectations
+
+  describe 'with track_statistics set to falsey' do
+    describe 'for #encrypt' do
+      it 'returns nil encryption statistics when track_statistics is not set' do
+        key, data, nonce, stats = symmetric.encrypt(plaintext_data, default_key_id)
+        expect(key).not_to be_nil
+        expect(data).not_to be_nil
+        expect(nonce).not_to be_nil
+        expect(stats).to be_empty
+      end
+
+      it 'returns nil encryption statistics when track statistics is not set (passed in dek)' do
+        _, ciphertext_key = symmetric.generate_data_encryption_key(default_key_id, default_encryption_context)
+        key, data, nonce, stats = symmetric.encrypt(plaintext_data, default_key_id, ciphertext_key, default_encryption_context)
+        expect(key).to eq(ciphertext_key)
+        expect(data).not_to be_nil
+        expect(nonce).not_to be_nil
+        expect(stats).to be_empty
+      end
+
+      it 'returns nil encryption statistics when track_statistics is set to false' do
+        key, data, nonce, stats = symmetric.encrypt(plaintext_data, default_key_id, nil, nil, false)
+        expect(key).not_to be_nil
+        expect(data).not_to be_nil
+        expect(nonce).not_to be_nil
+        expect(stats).to be_empty
+      end
+
+      it 'returns nil encryption statistics when track statistics is set to false (passed in dek)' do
+        _, ciphertext_key = symmetric.generate_data_encryption_key(default_key_id, default_encryption_context)
+        key, data, nonce, stats = symmetric.encrypt(plaintext_data, default_key_id, ciphertext_key, default_encryption_context, false)
+        expect(key).to eq(ciphertext_key)
+        expect(data).not_to be_nil
+        expect(nonce).not_to be_nil
+        expect(stats).to be_empty
+      end
+    end
+
+    describe 'for #decrypt' do
+      it 'returns nil encryption statistics when track_statistics is not set' do
+        key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id, nil, default_encryption_context)
+        result, should_reencrypt, stats = symmetric.decrypt(key, data, nonce, default_encryption_context)
+        expect(result).to eq(plaintext_data)
+        expect(should_reencrypt).to be_falsey
+        expect(stats).to be_empty
+      end
+
+      it 'raises an exception on decryption error when track_statistics is not set' do
+        key, data, = symmetric.encrypt(plaintext_data, default_key_id, nil, default_encryption_context)
+        expect do
+          symmetric.decrypt(key, data, SecureRandom.hex(12), default_encryption_context)
+        end.to raise_error(RbNaCl::CryptoError)
+      end
+
+      it 'returns nil encryption statistics when track_statistics is set to false' do
+        key, data, nonce = symmetric.encrypt(plaintext_data, default_key_id, nil, default_encryption_context)
+        result, should_reencrypt, stats = symmetric.decrypt(key, data, nonce, default_encryption_context, false)
+        expect(result).to eq(plaintext_data)
+        expect(should_reencrypt).to be_falsey
+        expect(stats).to be_empty
+      end
+
+      it 'raises an exception on decryption error when track_statistics is set to false' do
+        key, data, = symmetric.encrypt(plaintext_data, default_key_id, nil, default_encryption_context)
+        expect do
+          symmetric.decrypt(key, data, SecureRandom.hex(12), default_encryption_context, false)
+        end.to raise_error(RbNaCl::CryptoError)
+      end
+    end
+  end
 end
