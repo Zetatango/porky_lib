@@ -274,4 +274,51 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
     end
   end
   # rubocop:enable RSpec/MultipleExpectations
+
+  describe 'Encryption with a given key' do
+    let(:plaintext_key) { RbNaCl::Random.random_bytes(RbNaCl::SecretBox.key_bytes) }
+    let(:data) { SecureRandom.base64(32) }
+
+    describe '#encrypt_with_key_with_benchmark' do
+      it 'returns data and a nonce' do
+        encryption_info = symmetric.encrypt_with_key_with_benchmark(data, plaintext_key)
+
+        expect(encryption_info.ciphertext).not_to be_nil
+        expect(encryption_info.nonce).not_to be_nil
+      end
+
+      it 'returns encryption statistics' do
+        encryption_info = symmetric.encrypt_with_key_with_benchmark(data, plaintext_key)
+
+        expect(encryption_info.statistics).not_to be_nil
+
+        expect(encryption_info.statistics).to have_key(:encrypt)
+      end
+    end
+
+    describe '#decrypt_with_key_with_benchmark' do
+      it 'returns data' do
+        encryption_info = symmetric.encrypt_with_key_with_benchmark(data, plaintext_key)
+        decryption_info = symmetric.decrypt_with_key_with_benchmark(encryption_info.ciphertext, plaintext_key, encryption_info.nonce)
+
+        expect(decryption_info.plaintext).not_to be_nil
+      end
+
+      it 'returns encryption statistics' do
+        encryption_info = symmetric.encrypt_with_key_with_benchmark(data, plaintext_key)
+        decryption_info = symmetric.decrypt_with_key_with_benchmark(encryption_info.ciphertext, plaintext_key, encryption_info.nonce)
+
+        expect(decryption_info.statistics).not_to be_nil
+
+        expect(decryption_info.statistics).to have_key(:decrypt)
+      end
+    end
+
+    it 'creates encrypted data that can be decrypted' do
+      encryption_info = symmetric.encrypt_with_key_with_benchmark(data, plaintext_key)
+      decryption_info = symmetric.decrypt_with_key_with_benchmark(encryption_info.ciphertext, plaintext_key, encryption_info.nonce)
+
+      expect(decryption_info.plaintext).to eq(data)
+    end
+  end
 end
