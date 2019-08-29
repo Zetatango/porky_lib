@@ -11,7 +11,7 @@ haml:
   enabled: false
 
 reek:
-  enabled: true
+  enabled: false
 
 erblint:
   enabled: false

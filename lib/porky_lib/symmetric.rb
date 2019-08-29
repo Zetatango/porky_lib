@@ -191,6 +191,53 @@ class PorkyLib::Symmetric
     "\0" * length
   end
 
+  def encrypt_with_key_with_benchmark(plaintext, plaintext_key)
+    encryption_statistics = {}
+
+    nonce, ciphertext = benchmark_block(encryption_statistics, :encrypt) do
+      # Initialize the box
+      secret_box = RbNaCl::SecretBox.new(plaintext_key)
+
+      # First, make a nonce: A single-use value never repeated under the same key
+      # The nonce isn't secret, and can be sent with the ciphertext.
+      # The cipher instance has a nonce_bytes method for determining how many bytes should be in a nonce
+      nonce = RbNaCl::Random.random_bytes(secret_box.nonce_bytes)
+
+      # Encrypt a message with SecretBox
+      ciphertext = secret_box.encrypt(nonce, plaintext)
+
+      [nonce, ciphertext]
+    end
+
+    result = OpenStruct.new
+
+    result.ciphertext = ciphertext
+    result.nonce = nonce
+    result.statistics = encryption_statistics
+
+    result
+  end
+
+  def decrypt_with_key_with_benchmark(ciphertext, plaintext_key, nonce)
+    encryption_statistics = {}
+
+    plaintext = benchmark_block(encryption_statistics, :decrypt) do
+      secret_box = RbNaCl::SecretBox.new(plaintext_key)
+
+      # Decrypt the message
+      plaintext = secret_box.decrypt(nonce, ciphertext)
+
+      plaintext
+    end
+
+    result = OpenStruct.new
+
+    result.plaintext = plaintext
+    result.statistics = encryption_statistics
+
+    result
+  end
+
   private
 
   def benchmark_block(statistics, stat_label)
