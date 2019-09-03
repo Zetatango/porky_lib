@@ -51,6 +51,45 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
     [ciphertext, nonce]
   end
 
+  shared_examples_for 'Encrypt and decrypt with key tests' do
+    it 'Encrypt returns non-null values for ciphertext and nonce' do
+      encryption_info = symmetric.send(encrypt_function, data, plaintext_key)
+
+      expect(encryption_info.ciphertext).not_to be_nil
+      expect(encryption_info.nonce).not_to be_nil
+    end
+
+    it 'Decrypt returns an expected value' do
+      encryption_info = symmetric.send(encrypt_function, data, plaintext_key)
+      decryption_info = symmetric.send(decrypt_function, encryption_info.ciphertext, plaintext_key, encryption_info.nonce)
+      expect(decryption_info.plaintext).to eq(data)
+    end
+
+    it 'Decrypt with bad nonce raises CryptoError' do
+      encryption_info = symmetric.send(encrypt_function, data, plaintext_key)
+      expect do
+        symmetric.send(decrypt_function, encryption_info.ciphertext, plaintext_key, SecureRandom.hex(12))
+      end.to raise_error(RbNaCl::CryptoError)
+    end
+
+    it 'Decrypt with bad ciphertext data raises CryptoError' do
+      encryption_info = symmetric.send(encrypt_function, data, plaintext_key)
+      expect do
+        symmetric.send(decrypt_function, SecureRandom.base64(32), plaintext_key, encryption_info.nonce)
+      end.to raise_error(RbNaCl::CryptoError)
+    end
+
+    it 'Decrypt with slightly modified data raises CryptoError' do
+      encryption_info = symmetric.send(encrypt_function, data, plaintext_key)
+      data_bytes = encryption_info.ciphertext.unpack('c*')
+      data_bytes[0] = data_bytes[0] + 1
+      data = data_bytes.pack('c*')
+      expect do
+        symmetric.send(decrypt_function, data, plaintext_key, encryption_info.nonce)
+      end.to raise_error(RbNaCl::CryptoError)
+    end
+  end
+
   shared_examples_for 'Encrypt and decrypt tests' do
     it 'Encrypt returns non-null values for ciphertext key, ciphertext data, and nonce' do
       key, data, nonce = symmetric.send(encrypt_function, plaintext_data, default_key_id, nil, default_encryption_context)
@@ -279,14 +318,17 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
     let(:plaintext_key) { RbNaCl::Random.random_bytes(RbNaCl::SecretBox.key_bytes) }
     let(:data) { SecureRandom.base64(32) }
 
+    include_examples 'Encrypt and decrypt with key tests' do
+      let(:encrypt_function) { :encrypt_with_key_with_benchmark }
+      let(:decrypt_function) { :decrypt_with_key_with_benchmark }
+    end
+
+    include_examples 'Encrypt and decrypt with key tests' do
+      let(:encrypt_function) { :encrypt_with_key }
+      let(:decrypt_function) { :decrypt_with_key }
+    end
+
     describe '#encrypt_with_key_with_benchmark' do
-      it 'returns data and a nonce' do
-        encryption_info = symmetric.encrypt_with_key_with_benchmark(data, plaintext_key)
-
-        expect(encryption_info.ciphertext).not_to be_nil
-        expect(encryption_info.nonce).not_to be_nil
-      end
-
       it 'returns encryption statistics' do
         encryption_info = symmetric.encrypt_with_key_with_benchmark(data, plaintext_key)
 
@@ -297,13 +339,6 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
     end
 
     describe '#decrypt_with_key_with_benchmark' do
-      it 'returns data' do
-        encryption_info = symmetric.encrypt_with_key_with_benchmark(data, plaintext_key)
-        decryption_info = symmetric.decrypt_with_key_with_benchmark(encryption_info.ciphertext, plaintext_key, encryption_info.nonce)
-
-        expect(decryption_info.plaintext).not_to be_nil
-      end
-
       it 'returns encryption statistics' do
         encryption_info = symmetric.encrypt_with_key_with_benchmark(data, plaintext_key)
         decryption_info = symmetric.decrypt_with_key_with_benchmark(encryption_info.ciphertext, plaintext_key, encryption_info.nonce)
@@ -312,13 +347,6 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
 
         expect(decryption_info.statistics).to have_key(:decrypt)
       end
-    end
-
-    it 'creates encrypted data that can be decrypted' do
-      encryption_info = symmetric.encrypt_with_key_with_benchmark(data, plaintext_key)
-      decryption_info = symmetric.decrypt_with_key_with_benchmark(encryption_info.ciphertext, plaintext_key, encryption_info.nonce)
-
-      expect(decryption_info.plaintext).to eq(data)
     end
   end
 end

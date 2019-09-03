@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    porky_lib (0.6.2)
+    porky_lib (0.7.0)
       aws-sdk-kms
       aws-sdk-s3
       msgpack
