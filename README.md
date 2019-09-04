@@ -76,6 +76,16 @@ To encrypt data:
 [ciphertext_dek, ciphertext, nonce] = PorkyLib::Symmetric.instance.encrypt(data, cmk_key_id, ciphertext_dek, encryption_context)
 ```
 
+To encrypt data with a known plaintext key:
+```ruby
+# Where plaintext is the data to encrypt
+# plaintext_key is the encryption key to use
+# encryption_info is the structure returned that contains:
+#   ciphertext: plaintext encrypted under plaintext_key
+#   nonce: The generated nonce 
+encryption_info = PorkyLib::Symmetric.instance.encrypt_with_key(plaintext, plaintext_key)
+```
+
 ### Decrypting Data
 To decrypt data:
 ```ruby
@@ -84,6 +94,16 @@ To decrypt data:
 # nonce is the nonce value associated with ciphertext
 # encryption_context is an optional parameter to provide additional authentication data for decrypting the DEK. Default is nil. Note, this must match the value that was used to encrypt.
 plaintext_data = PorkyLib::Symmetric.instance.decrypt(ciphertext_dek, ciphertext, nonce, encryption_context)
+```
+
+To decrypt data with a known plaintext key:
+```ruby
+# Where ciphertext is the encrypted data to be decrypted
+# plaintext_key is the decryption key to use
+# nonce is the nonce to use 
+# decryption_info is the structured returned that contains:
+#   plaintext: ciphertext decrypted under plaintext_key
+decryption_info = PorkyLib::Symmetric.instance.decrypt_with_key(ciphertext, plaintext_key, nonce)
 ```
 
 ### Generating Data Encryption Keys
