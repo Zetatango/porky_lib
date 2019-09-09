@@ -95,10 +95,11 @@ class PorkyLib::FileService
     file_name = options[:file_name] || SecureRandom.uuid
     obj = s3.bucket(bucket_name).object(file_name)
 
-    obj.presigned_url(:put,
-                      server_side_encryption: 'aws:kms',
-                      expires_in: presign_url_expires_in,
-                      metadata: options[:metadata])
+    presigned_url = obj.presigned_url(:put,
+                                      server_side_encryption: 'aws:kms',
+                                      expires_in: presign_url_expires_in,
+                                      metadata: options[:metadata])
+    [presigned_url, file_name]
   rescue Aws::Errors::ServiceError => e
     raise FileServiceError, "PresignedPostUrl for #{file_name} from S3 bucket #{bucket_name} failed: #{e.message}"
   end

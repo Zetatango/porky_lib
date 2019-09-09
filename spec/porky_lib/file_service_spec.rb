@@ -414,7 +414,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
     let(:s3_object) { instance_double(Aws::S3::Object) }
 
     it 'returns presigned post url and fields' do
-      url = file_service.presigned_post_url(bucket_name)
+      url, _file_name = file_service.presigned_post_url(bucket_name)
       uri = URI.parse(url)
       query_params = CGI.parse(uri.query)
 
@@ -425,14 +425,15 @@ RSpec.describe PorkyLib::FileService, type: :request do
     end
 
     it 'uses file_name as key if provided' do
-      url = file_service.presigned_post_url(bucket_name, file_name: default_file_key)
+      url, file_name = file_service.presigned_post_url(bucket_name, file_name: default_file_key)
       uri = URI.parse(url)
 
       expect(uri.path).to eq("/#{bucket_name}/#{default_file_key}")
+      expect(default_file_key).to eq(file_name)
     end
 
     it 'passes metadata if provided' do
-      url = file_service.presigned_post_url(bucket_name, metadata: metadata)
+      url, _file_name = file_service.presigned_post_url(bucket_name, metadata: metadata)
       uri = URI.parse(url)
       query_params = CGI.parse(uri.query)
 
@@ -443,7 +444,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
     end
 
     it 'sets expiry date based on value defined in config' do
-      url = file_service.presigned_post_url(bucket_name)
+      url, _file_name = file_service.presigned_post_url(bucket_name)
       uri = URI.parse(url)
       query_params = CGI.parse(uri.query)
 
