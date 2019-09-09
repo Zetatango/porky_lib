@@ -416,7 +416,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'returns presigned post url and fields' do
       url = file_service.presigned_post_url(bucket_name)
       uri = URI.parse(url)
-      query_params = CGI::parse(uri.query)
+      query_params = CGI.parse(uri.query)
 
       expect(uri.scheme).to eq('https')
       expect(uri.path).to include("/#{bucket_name}/")
@@ -425,17 +425,16 @@ RSpec.describe PorkyLib::FileService, type: :request do
     end
 
     it 'uses file_name as key if provided' do
-      url = file_service.presigned_post_url(bucket_name, {file_name: default_file_key})
+      url = file_service.presigned_post_url(bucket_name, file_name: default_file_key)
       uri = URI.parse(url)
-      query_params = CGI::parse(uri.query)
 
       expect(uri.path).to eq("/#{bucket_name}/#{default_file_key}")
     end
 
     it 'passes metadata if provided' do
-      url = file_service.presigned_post_url(bucket_name, {metadata: metadata})
+      url = file_service.presigned_post_url(bucket_name, metadata: metadata)
       uri = URI.parse(url)
-      query_params = CGI::parse(uri.query)
+      query_params = CGI.parse(uri.query)
 
       expect(uri.scheme).to eq('https')
       expect(query_params["x-amz-meta-report_type"]).to eq([metadata[:report_type]])
@@ -446,7 +445,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'sets expiry date based on value defined in config' do
       url = file_service.presigned_post_url(bucket_name)
       uri = URI.parse(url)
-      query_params = CGI::parse(uri.query)
+      query_params = CGI.parse(uri.query)
 
       expect(query_params["X-Amz-Expires"]).to eq([PorkyLib::Config.config[:presign_url_expires_in].to_s])
     end
@@ -464,7 +463,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
       allow(Aws::S3::Object).to receive(:new).and_return(s3_object)
       allow(s3_object).to receive(:presigned_url).and_raise(Aws::S3::Errors::ServiceError.new(nil, 'Error'))
       begin
-        file_service.presigned_post_url(bucket_name, {file_name: default_file_key})
+        file_service.presigned_post_url(bucket_name, file_name: default_file_key)
       rescue PorkyLib::FileService::FileServiceError => e
         expect(e.message).to match(/\APresignedPostUrl for #{default_file_key} from S3 bucket #{bucket_name} failed:\s+/)
       end
@@ -485,7 +484,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'sets expiry date based on value defined in config' do
       url = file_service.presigned_get_url(bucket_name, default_file_key)
       uri = URI.parse(url)
-      query_params = CGI::parse(uri.query)
+      query_params = CGI.parse(uri.query)
 
       expect(query_params["X-Amz-Expires"]).to eq([PorkyLib::Config.config[:presign_url_expires_in].to_s])
     end
