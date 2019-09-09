@@ -6,7 +6,7 @@ class PorkyLib::Config
   @aws_key_secret = ''
   @aws_client_mock = false
   @max_file_size = 0
-  @presign_url_expires_in = 60*5 
+  @presign_url_expires_in = 300 # 5 minutes
 
   @config = {
     aws_region: @aws_region,
