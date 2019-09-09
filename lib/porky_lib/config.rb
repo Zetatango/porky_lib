@@ -6,13 +6,15 @@ class PorkyLib::Config
   @aws_key_secret = ''
   @aws_client_mock = false
   @max_file_size = 0
+  @presign_url_expires_in = 60*5 
 
   @config = {
     aws_region: @aws_region,
     aws_key_id: @aws_key_id,
     aws_key_secret: @aws_key_secret,
     aws_client_mock: @aws_client_mock,
-    max_file_size: @max_file_size
+    max_file_size: @max_file_size,
+    presign_url_expires_in: @presign_url_expires_in
   }
 
   @allowed_config_keys = @config.keys
