@@ -8,7 +8,8 @@ RSpec.describe PorkyLib::Config, type: :request do
       aws_key_id: '',
       aws_key_secret: '',
       aws_client_mock: true,
-      max_file_size: 0 }
+      max_file_size: 0,
+      presign_url_expires_in: 300 }
   end
 
   before do
