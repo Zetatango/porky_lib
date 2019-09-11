@@ -96,7 +96,6 @@ class PorkyLib::FileService
     obj = s3.bucket(bucket_name).object(file_name)
 
     presigned_url = obj.presigned_url(:put,
-                                      server_side_encryption: 'aws:kms',
                                       expires_in: presign_url_expires_in,
                                       metadata: options[:metadata])
     [presigned_url, file_name]

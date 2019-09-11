@@ -404,15 +404,12 @@ RSpec.describe PorkyLib::FileService, type: :request do
   describe '#presigned_post_url' do
     let(:s3_object) { instance_double(Aws::S3::Object) }
 
-    it 'returns presigned post url and fields' do
+    it 'returns presigned post url' do
       url, _file_name = file_service.presigned_post_url(bucket_name)
       uri = URI.parse(url)
-      query_params = CGI.parse(uri.query)
 
       expect(uri.scheme).to eq('https')
       expect(uri.path).to include("/#{bucket_name}/")
-
-      expect(query_params["x-amz-server-side-encryption"]).to eq(["aws:kms"])
     end
 
     it 'uses file_name as key if provided' do
