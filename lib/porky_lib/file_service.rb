@@ -91,6 +91,27 @@ class PorkyLib::FileService
     tempfile.unlink
   end
 
+  def presigned_post_url(bucket_name, options = {})
+    file_name = options[:file_name] || SecureRandom.uuid
+    obj = s3.bucket(bucket_name).object(file_name)
+
+    presigned_url = obj.presigned_url(:put,
+                                      expires_in: presign_url_expires_in,
+                                      metadata: options[:metadata])
+    [presigned_url, file_name]
+  rescue Aws::Errors::ServiceError => e
+    raise FileServiceError, "PresignedPostUrl for #{file_name} from S3 bucket #{bucket_name} failed: #{e.message}"
+  end
+
+  def presigned_get_url(bucket_name, file_key)
+    obj = s3.bucket(bucket_name).object(file_key)
+
+    obj.presigned_url(:get,
+                      expires_in: presign_url_expires_in)
+  rescue Aws::Errors::ServiceError => e
+    raise FileServiceError, "PresignedGetUrl for #{file_key} from S3 bucket #{bucket_name} failed: #{e.message}"
+  end
+
   private
 
   def input_invalid?(file, bucket_name, key_id)
@@ -169,6 +190,10 @@ class PorkyLib::FileService
     tempfile.close
 
     tempfile
+  end
+
+  def presign_url_expires_in
+    PorkyLib::Config.config[:presign_url_expires_in]
   end
 
   def s3_client
