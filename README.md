@@ -35,10 +35,14 @@ Something like the following should be included in an initializer in your Rails 
 ```ruby
 # Use PorkyLib's AWS KMS mock client except in production, for example
 use_mock_client = !Rails.env.production?
+max_file_size = 0 # max file size allowed, in bytes - defaults to 0
+presign_url_expires_in = 300 # expiry time for presigned urls, in seconds - defaults to 300 (5 minutes)
 PorkyLib::Config.configure(aws_region: ENV[AWS_REGION],
                            aws_key_id: ENV[AWS_KEY_ID],
                            aws_key_secret: ENV[AWS_KEY_SECRET],
-                           aws_client_mock: use_mock_client)
+                           aws_client_mock: use_mock_client,
+                           max_file_size: max_file_size,
+                           presign_url_expires_in: presign_url_expires_in)
 PorkyLib::Config.initialize_aws
 ```
 
@@ -150,6 +154,23 @@ file_data = PorkyLib::FileService.read(bucket_name, file_key)
 # key_id is the ID of the CMK to use to generate a data encryption key to encrypt the file data
 # options is an optional parameter for specifying optional metadata about the file
 file_key = PorkyLib::FileService.write(file, bucket_name, key_id, options)
+```
+
+### Generate S3 Presigned POST URL
+To generate a new presigned POST url (used to upload files directly to AWS S3):
+```ruby
+# Where bucket_name is the name of the S3 bucket to write to
+# options is an optional parameter for specifying optional metadata about the file
+# file_key is randomly generated, unless it's passed as a parameter in the options hash using 'file_name' as key
+url, file_key = PorkyLib::Symmetric.instance.presigned_post_url(bucket_name, options)
+```
+
+### Generate S3 Presigned GET URL
+To generate a new presigned GET url (used to download files directly from AWS S3):
+```ruby
+# Where bucket_name is the name of the S3 bucket to read from
+# file_key is the file identifier of the file/data that was written to S3.
+url = PorkyLib::Symmetric.instance.presigned_get_url(bucket_name, file_key)
 ```
 
 ## Development
