@@ -60,7 +60,12 @@ class PorkyLib::FileService
 
     data = file_data(file)
     file_key = options.key?(:directory) ? "#{options[:directory]}/#{SecureRandom.uuid}" : SecureRandom.uuid
-    tempfile = encrypt_file_contents(data, key_id, file_key, options)
+
+    tempfile = if options[:store_raw_file]
+                 write_tempfile(data, file_key)
+               else
+                 encrypt_file_contents(data, key_id, file_key, options)
+               end
 
     begin
       perform_upload(bucket_name, file_key, tempfile, options)
