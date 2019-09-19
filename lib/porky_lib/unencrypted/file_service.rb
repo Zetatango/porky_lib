@@ -22,7 +22,7 @@ class Unencrypted::FileService
       raise FileServiceError, "Attempt to download a file from S3 failed.\n#{e.message}"
     end
 
-    tempfile
+    tempfile.read
   end
 
   def write(file, bucket_name, key_id, options = {})

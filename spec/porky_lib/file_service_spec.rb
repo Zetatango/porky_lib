@@ -99,11 +99,6 @@ RSpec.describe PorkyLib::FileService, type: :request do
     expect(file_key).not_to be_nil
   end
 
-  it 'write unencrypted data to S3' do
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id, store_raw_file: true)
-    expect(file_key).not_to be_nil
-  end
-
   it 'write large encrypted data to S3' do
     file_key = file_service.write(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"),
                                   bucket_name, default_key_id)
