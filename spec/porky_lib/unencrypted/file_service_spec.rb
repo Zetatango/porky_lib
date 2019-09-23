@@ -60,29 +60,29 @@ RSpec.describe Unencrypted::FileService, type: :request do
   end
 
   it 'write plaintext data to S3' do
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+    file_key = file_service.write(plaintext_data, bucket_name)
     expect(file_key).not_to be_nil
   end
 
   it 'write large plaintext data to S3' do
     file_key = file_service.write(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"),
-                                  bucket_name, default_key_id)
+                                  bucket_name)
     expect(file_key).not_to be_nil
   end
 
   it 'write plaintext data to S3 with metadata' do
     metadata = { content_type: 'test/data' }
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id, metadata: metadata)
+    file_key = file_service.write(plaintext_data, bucket_name, metadata: metadata)
     expect(file_key).not_to be_nil
   end
 
   it 'write plaintext data to S3 with directory' do
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id, directory: '/directory1/dirA')
+    file_key = file_service.write(plaintext_data, bucket_name, directory: '/directory1/dirA')
     expect(file_key).not_to be_nil
   end
 
   it 'write file to S3' do
-    file_key = file_service.write(write_test_file(plaintext_data).path, bucket_name, default_key_id)
+    file_key = file_service.write(write_test_file(plaintext_data).path, bucket_name)
     expect(file_key).not_to be_nil
   end
 
@@ -90,25 +90,25 @@ RSpec.describe Unencrypted::FileService, type: :request do
     PorkyLib::Config.configure(max_file_size: 10 * 1024)
     expect do
       file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).path,
-                         bucket_name, default_key_id)
+                         bucket_name)
     end.to raise_exception(Unencrypted::FileService::FileSizeTooLargeError)
   end
 
   it 'write file too large to S3' do
     file_key = file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).path,
-                                  bucket_name, default_key_id)
+                                  bucket_name)
     expect(file_key).not_to be_nil
   end
 
   it 'write file to S3 with metadata' do
     tempfile = write_test_file(plaintext_data)
     metadata = { content_type: 'test/data' }
-    file_key = file_service.write(tempfile.path, bucket_name, default_key_id, metadata: metadata)
+    file_key = file_service.write(tempfile.path, bucket_name, metadata: metadata)
     expect(file_key).not_to be_nil
   end
 
   it 'read plaintext data from S3' do
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+    file_key = file_service.write(plaintext_data, bucket_name)
 
     plaintext = file_service.read(bucket_name, file_key)
     expect(plaintext_data).to eq(plaintext)
@@ -116,7 +116,7 @@ RSpec.describe Unencrypted::FileService, type: :request do
 
   it 'read plaintext data from S3 with directory' do
     dir_name = 'directory1/dirA'
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id, directory: dir_name)
+    file_key = file_service.write(plaintext_data, bucket_name, directory: dir_name)
     expect(file_key).to include(dir_name)
 
     plaintext = file_service.read(bucket_name, file_key)
@@ -125,7 +125,7 @@ RSpec.describe Unencrypted::FileService, type: :request do
 
   it 'read large plaintext data from S3' do
     stub_large_file
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+    file_key = file_service.write(plaintext_data, bucket_name)
 
     plaintext, = file_service.read(bucket_name, file_key)
     expect(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).to eq(plaintext)
@@ -133,7 +133,7 @@ RSpec.describe Unencrypted::FileService, type: :request do
 
   it 'read plaintext data too large from S3' do
     stub_large_file
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+    file_key = file_service.write(plaintext_data, bucket_name)
 
     PorkyLib::Config.configure(max_file_size: 10 * 1024)
     expect do
@@ -143,19 +143,13 @@ RSpec.describe Unencrypted::FileService, type: :request do
 
   it 'attempt to write with file nil raises FileServiceError' do
     expect do
-      file_service.write(nil, bucket_name, default_key_id)
+      file_service.write(nil, bucket_name)
     end.to raise_exception(Unencrypted::FileService::FileServiceError)
   end
 
   it 'attempt to write with bucket name nil raises FileServiceError' do
     expect do
-      file_service.write(plaintext_data, nil, default_key_id)
-    end.to raise_exception(Unencrypted::FileService::FileServiceError)
-  end
-
-  it 'attempt to write with key ID nil raises FileServiceError' do
-    expect do
-      file_service.write(plaintext_data, bucket_name, nil)
+      file_service.write(plaintext_data, nil)
     end.to raise_exception(Unencrypted::FileService::FileServiceError)
   end
 
@@ -167,7 +161,7 @@ RSpec.describe Unencrypted::FileService, type: :request do
       }
     }
     expect do
-      file_service.write(plaintext_data, bucket_name, default_key_id)
+      file_service.write(plaintext_data, bucket_name)
     end.to raise_exception(Unencrypted::FileService::FileServiceError)
   end
 
@@ -179,7 +173,7 @@ RSpec.describe Unencrypted::FileService, type: :request do
       }
     }
     expect do
-      file_service.write(plaintext_data, bucket_name, default_key_id)
+      file_service.write(plaintext_data, bucket_name)
     end.to raise_exception(Unencrypted::FileService::FileServiceError)
   end
 

@@ -3,10 +3,6 @@
 require 'aws-sdk-s3'
 
 module FileServiceHelper
-  def input_invalid?(file, bucket_name, key_id)
-    file.nil? || bucket_name.nil? || key_id.nil?
-  end
-
   def file_size_invalid?(file)
     file.bytesize > max_size || (File.file?(file) && File.size(file) > max_size)
   end

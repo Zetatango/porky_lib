@@ -25,8 +25,8 @@ class Unencrypted::FileService
     tempfile.read
   end
 
-  def write(file, bucket_name, key_id, options = {})
-    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
+  def write(file, bucket_name, options = {})
+    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name)
     raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if file_size_invalid?(file)
 
     data = file_data(file)
@@ -43,5 +43,11 @@ class Unencrypted::FileService
     # Remove tempfile from disk
     tempfile.unlink
     file_key
+  end
+
+  private
+
+  def input_invalid?(file, bucket_name)
+    file.nil? || bucket_name.nil?
   end
 end

@@ -159,4 +159,8 @@ class PorkyLib::FileService
   def s3_client
     @s3_client ||= Aws::S3::Client.new
   end
+
+  def input_invalid?(file, bucket_name, key_id)
+    file.nil? || bucket_name.nil? || key_id.nil?
+  end
 end
