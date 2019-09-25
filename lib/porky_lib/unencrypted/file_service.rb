@@ -25,6 +25,7 @@ class PorkyLib::Unencrypted::FileService
     tempfile.read
   end
 
+  # rubocop:disable Metrics/CyclomaticComplexity
   def write(file, bucket_name, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name)
     raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if file_size_invalid?(file)
@@ -42,6 +43,7 @@ class PorkyLib::Unencrypted::FileService
     tempfile.unlink unless File.file?(file)
     file_key
   end
+  # rubocop:enable Metrics/CyclomaticComplexity
 
   private
 
