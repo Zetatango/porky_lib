@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Unencrypted::FileService, type: :request do
+RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
   let(:file_service) { described_class.clone.instance }
   let(:default_config) do
     { aws_region: 'us-east-1',
@@ -91,7 +91,7 @@ RSpec.describe Unencrypted::FileService, type: :request do
     expect do
       file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).path,
                          bucket_name)
-    end.to raise_exception(Unencrypted::FileService::FileSizeTooLargeError)
+    end.to raise_exception(PorkyLib::Unencrypted::FileService::FileSizeTooLargeError)
   end
 
   it 'write file too large to S3' do
@@ -138,19 +138,19 @@ RSpec.describe Unencrypted::FileService, type: :request do
     PorkyLib::Config.configure(max_file_size: 10 * 1024)
     expect do
       file_service.read(bucket_name, file_key)
-    end.to raise_exception(Unencrypted::FileService::FileSizeTooLargeError)
+    end.to raise_exception(PorkyLib::Unencrypted::FileService::FileSizeTooLargeError)
   end
 
   it 'attempt to write with file nil raises FileServiceError' do
     expect do
       file_service.write(nil, bucket_name)
-    end.to raise_exception(Unencrypted::FileService::FileServiceError)
+    end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
   end
 
   it 'attempt to write with bucket name nil raises FileServiceError' do
     expect do
       file_service.write(plaintext_data, nil)
-    end.to raise_exception(Unencrypted::FileService::FileServiceError)
+    end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
   end
 
   it 'attempt to write to bucket without permission raises FileServiceError' do
@@ -162,7 +162,7 @@ RSpec.describe Unencrypted::FileService, type: :request do
     }
     expect do
       file_service.write(plaintext_data, bucket_name)
-    end.to raise_exception(Unencrypted::FileService::FileServiceError)
+    end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
   end
 
   it 'attempt to write to bucket that does not exist raises FileServiceError' do
@@ -174,7 +174,7 @@ RSpec.describe Unencrypted::FileService, type: :request do
     }
     expect do
       file_service.write(plaintext_data, bucket_name)
-    end.to raise_exception(Unencrypted::FileService::FileServiceError)
+    end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
   end
 
   it 'attempt to read from bucket without permission raises FileServiceError' do
@@ -186,7 +186,7 @@ RSpec.describe Unencrypted::FileService, type: :request do
     }
     expect do
       file_service.read(bucket_name, default_key_id)
-    end.to raise_exception(Unencrypted::FileService::FileServiceError)
+    end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
   end
 
   it 'attempt to read from bucket does not exist raises FileServiceError' do
@@ -198,6 +198,6 @@ RSpec.describe Unencrypted::FileService, type: :request do
     }
     expect do
       file_service.read(bucket_name, default_key_id)
-    end.to raise_exception(Unencrypted::FileService::FileServiceError)
+    end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
   end
 end

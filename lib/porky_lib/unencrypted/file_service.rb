@@ -3,7 +3,7 @@
 require 'singleton'
 require 'porky_lib/file_service_helper'
 
-class Unencrypted::FileService
+class PorkyLib::Unencrypted::FileService
   include Singleton
   include FileServiceHelper
 
