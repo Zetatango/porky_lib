@@ -44,4 +44,8 @@ module FileServiceHelper
       GB: 1024 * 1024 * 1024 * 1024
     }.each_pair { |symbol, bytes| return "#{(max_size.to_f / (bytes / 1024)).round(2)}#{symbol}" if max_size < bytes }
   end
+
+  def generate_file_key(options)
+    options.key?(:directory) ? "#{options[:directory]}/#{SecureRandom.uuid}" : SecureRandom.uuid
+  end
 end

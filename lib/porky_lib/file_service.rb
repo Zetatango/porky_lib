@@ -60,8 +60,7 @@ class PorkyLib::FileService
     raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if file_size_invalid?(file)
 
     data = file_data(file)
-    file_key = options.key?(:directory) ? "#{options[:directory]}/#{SecureRandom.uuid}" : SecureRandom.uuid
-
+    file_key = generate_file_key(options)
     tempfile = encrypt_file_contents(data, key_id, file_key, options)
 
     begin
