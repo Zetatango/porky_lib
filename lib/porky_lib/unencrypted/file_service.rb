@@ -39,7 +39,7 @@ class PorkyLib::Unencrypted::FileService
     end
 
     # Remove tempfile from disk
-    tempfile.unlink unless File.file?(file)
+    tempfile&.unlink if tempfile.class == Tempfile
     file_key
   end
 
