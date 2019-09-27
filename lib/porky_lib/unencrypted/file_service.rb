@@ -18,7 +18,7 @@ class PorkyLib::Unencrypted::FileService
       raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if object.content_length > max_size
 
       object.download_file(tempfile.path, options)
-    rescue Aws::Errors::ServiceError => e
+    rescue Aws::Errors::ServiceError, Seahorse::Client::NetworkingError => e
       raise FileServiceError, "Attempt to download a file from S3 failed.\n#{e.message}"
     end
 
@@ -34,12 +34,10 @@ class PorkyLib::Unencrypted::FileService
 
     begin
       perform_upload(bucket_name, file_key, tempfile, options)
-    rescue Aws::Errors::ServiceError => e
+    rescue Aws::Errors::ServiceError, Seahorse::Client::NetworkingError => e
       raise FileServiceError, "Attempt to upload a file to S3 failed.\n#{e.message}"
     end
 
-    # Remove tempfile from disk
-    tempfile&.unlink if tempfile.class == Tempfile
     file_key
   end
 
