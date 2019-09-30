@@ -147,6 +147,13 @@ alias_exists = PorkyLib::Symmetric.instance.cmk_alias_exists?(key_alias)
 file_data = PorkyLib::FileService.read(bucket_name, file_key)
 ```
 
+### To Read Unencrypted Files From AWS S3
+```ruby
+# Where bucket_name is the name of the S3 bucket to read from
+# file_key is file identifier of the file/data that was written to S3.
+file_data = PorkyLib::Unencrypted::FileService.read(bucket_name, file_key)
+```
+
 ### To Write To AWS S3
 ```ruby
 # Where file is the data to encrypt and upload to S3 (can be raw data or path to a file on disk)
@@ -154,6 +161,14 @@ file_data = PorkyLib::FileService.read(bucket_name, file_key)
 # key_id is the ID of the CMK to use to generate a data encryption key to encrypt the file data
 # options is an optional parameter for specifying optional metadata about the file
 file_key = PorkyLib::FileService.write(file, bucket_name, key_id, options)
+```
+
+### To Write Unencrypted Files To AWS S3
+```ruby
+# Where file is the data to upload to S3 (can be raw data or path to a file on disk)
+# bucket_name is the name of the S3 bucket to write to
+# options is an optional parameter for specifying optional metadata about the file
+file_key = PorkyLib::Unencrypted::FileService.write(file, bucket_name, options)
 ```
 
 ### Generate S3 Presigned POST URL
