@@ -30,7 +30,7 @@ class PorkyLib::Unencrypted::FileService
     raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if file_size_invalid?(file)
 
     file_key = generate_file_key(options)
-    tempfile = File.file?(file) ? File.open(file) : write_tempfile(file_data(file), file_key)
+    tempfile = write_tempfile(file_data(file), file_key)
 
     begin
       perform_upload(bucket_name, file_key, tempfile, options)
