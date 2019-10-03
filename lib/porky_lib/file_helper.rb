@@ -2,7 +2,7 @@
 
 require 'aws-sdk-s3'
 
-module FileServiceHelper
+module FileHelper
   def file_size_invalid?(file)
     file.bytesize > max_size || (File.file?(file) && File.size(file) > max_size)
   end

@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 require 'singleton'
-require 'porky_lib/file_service_helper'
+require 'porky_lib/file_helper'
 
 class PorkyLib::FileService
   include Singleton
-  include FileServiceHelper
+  include FileHelper
 
   class FileServiceError < StandardError; end
   class FileSizeTooLargeError < StandardError; end

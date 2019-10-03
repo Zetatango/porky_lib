@@ -6,5 +6,4 @@ module PorkyLib
   require 'porky_lib/symmetric'
   require 'porky_lib/version'
   require 'porky_lib/unencrypted'
-  require 'porky_lib/file_service_helper'
 end
