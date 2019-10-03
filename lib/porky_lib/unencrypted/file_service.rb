@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
 require 'singleton'
-require 'porky_lib/file_helper'
 
 class PorkyLib::Unencrypted::FileService
   include Singleton
-  include FileHelper
+  include PorkyLib::FileServiceHelper
 
   class FileServiceError < StandardError; end
   class FileSizeTooLargeError < StandardError; end
