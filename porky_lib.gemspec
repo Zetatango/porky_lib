@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'codacy-coverage'
   spec.add_development_dependency 'codecov'
   spec.add_development_dependency 'msgpack'
+  spec.add_development_dependency 'rails'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rbnacl', '=5.0.0'
   spec.add_development_dependency 'rbnacl-libsodium'
