@@ -6,7 +6,7 @@ jobs:
     environment:
       - CODECOV_TOKEN: 4d03ca51-5054-4858-87c7-b37c376ffb6a
     docker:
-      - image: circleci/ruby:2.6.3
+      - image: circleci/ruby:2.6.5
 
     steps:
       - checkout
