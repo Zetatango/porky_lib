@@ -4,11 +4,11 @@ require 'aws-sdk-s3'
 
 module PorkyLib::FileServiceHelper
   def file_size_invalid?(file)
-    file.bytesize > max_size || (File.file?(file) && File.size(file) > max_size)
+    (file.is_a?(String) && file.bytesize > max_size) || (!file.is_a?(String) && File.size(file) > max_size)
   end
 
   def file_data(file)
-    File.file?(file) ? File.read(file) : file
+    file.is_a?(String) ? file : File.read(file)
   end
 
   def write_tempfile(file_contents, file_key)
