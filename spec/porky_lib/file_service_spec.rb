@@ -90,7 +90,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
   def write_test_file(data)
     tempfile = Tempfile.new
     tempfile << data
-    tempfile.close
+    tempfile.flush
     tempfile
   end
 
@@ -117,20 +117,20 @@ RSpec.describe PorkyLib::FileService, type: :request do
   end
 
   it 'write file to S3' do
-    file_key = file_service.write(write_test_file(plaintext_data).path, bucket_name, default_key_id)
+    file_key = file_service.write(write_test_file(plaintext_data), bucket_name, default_key_id)
     expect(file_key).not_to be_nil
   end
 
   it 'write large file to S3' do
     PorkyLib::Config.configure(max_file_size: 10 * 1024)
     expect do
-      file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).path,
+      file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")),
                          bucket_name, default_key_id)
     end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
   end
 
   it 'write file too large to S3' do
-    file_key = file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).path,
+    file_key = file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")),
                                   bucket_name, default_key_id)
     expect(file_key).not_to be_nil
   end
@@ -138,7 +138,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
   it 'write file to S3 with metadata' do
     tempfile = write_test_file(plaintext_data)
     metadata = { content_type: 'test/data' }
-    file_key = file_service.write(tempfile.path, bucket_name, default_key_id, metadata: metadata)
+    file_key = file_service.write(tempfile, bucket_name, default_key_id, metadata: metadata)
     expect(file_key).not_to be_nil
   end
 
@@ -315,6 +315,19 @@ RSpec.describe PorkyLib::FileService, type: :request do
     expect do
       file_service.overwrite_file(plaintext_data, nil, bucket_name, default_key_id)
     end.to raise_error(PorkyLib::FileService::FileServiceError)
+  end
+
+  it 'file_size_invalid? handles contents containing a null byte when reading a file' do
+    null_byte_contents = "\xA0\0"
+    file_key = file_service.write(null_byte_contents, bucket_name, default_key_id)
+    expect(file_key).not_to be_nil
+  end
+
+  it 'file_size_invalid? handles content encoded as ASCII_8BIT (BINARY) when creating the tempfile' do
+    # ASCII_8BIT String with character, \xC3, has undefined conversion from ACSII-8BIT to UTF-8
+    my_file_contents = "\xC3Hello"
+    file_key = file_service.write(my_file_contents, bucket_name, default_key_id)
+    expect(file_key).not_to be_nil
   end
 
   describe '#read_file_info' do
