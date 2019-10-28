@@ -63,7 +63,7 @@ class PorkyLib::KeyManagementService
 
   def cache_plaintext_key(encryption_key, plaintext_key)
     Rails.cache.write(encryption_key.guid, plaintext_key, namespace: KEY_MANAGEMENT_SERVICE_CACHE_NAMESPACE,
-                      expires_in: @expires_in)
+                                                          expires_in: @expires_in)
   rescue Redis::BaseError => e
     Rails.logger.error("Failed to cache encryption key: #{e.message}")
   end
@@ -74,7 +74,7 @@ class PorkyLib::KeyManagementService
     encoded_key = Base64.encode64(data_encryption_key)
 
     key = PorkyLib::EncryptionKey.create!(partition_guid: @partition_guid, key_epoch: encryption_epoch,
-                                encrypted_data_encryption_key: encoded_key, version: KEY_VERSION)
+                                          encrypted_data_encryption_key: encoded_key, version: KEY_VERSION)
 
     cache_plaintext_key(key, plaintext_key)
 

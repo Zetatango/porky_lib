@@ -11,13 +11,7 @@ class PorkyLib::CachingEncryptor
   class InvalidParameterException < CachingEncryptorException; end
 
   def encrypt(*args, &_block)
-    data = args.first[:value]
-    partition_guid = args.first[:partition_guid]
-    encryption_epoch = args.first[:encryption_epoch]
-    expires_in = args.first[:expires_in]
-    cmk_key_id = args.first[:cmk_key_id]
-
-    raise InvalidParameterException unless data.present? && partition_guid.present? && encryption_epoch.present? && expires_in.present? && cmk_key_id.present?
+    data, partition_guid, encryption_epoch, expires_in, cmk_key_id = validate_encrypt_params(*args)
 
     kms = PorkyLib::KeyManagementService.new(partition_guid, expires_in, cmk_key_id)
 
@@ -48,11 +42,7 @@ class PorkyLib::CachingEncryptor
   end
 
   def decrypt(*args, &block)
-    value = args.first[:value]
-    expires_in = args.first[:expires_in]
-    cmk_key_id = args.first[:cmk_key_id]
-
-    raise InvalidParameterException unless value.present? && expires_in.present? && cmk_key_id.present?
+    value, expires_in, cmk_key_id = validate_decrypt_params(*args)
 
     ciphertext_info = JSON.parse(value, symbolize_names: true)
 
@@ -97,5 +87,27 @@ class PorkyLib::CachingEncryptor
     nonce = Base64.decode64(ciphertext_data[:nonce])
 
     PorkyLib::Symmetric.instance.decrypt(ciphertext_key, ciphertext, nonce).first
+  end
+
+  def validate_encrypt_params(*args)
+    data = args.first[:value]
+    partition_guid = args.first[:partition_guid]
+    encryption_epoch = args.first[:encryption_epoch]
+    expires_in = args.first[:expires_in]
+    cmk_key_id = args.first[:cmk_key_id]
+
+    raise InvalidParameterException unless data.present? && partition_guid.present? && encryption_epoch.present? && expires_in.present? && cmk_key_id.present?
+
+    [data, partition_guid, encryption_epoch, expires_in, cmk_key_id]
+  end
+
+  def validate_decrypt_params(*args)
+    value = args.first[:value]
+    expires_in = args.first[:expires_in]
+    cmk_key_id = args.first[:cmk_key_id]
+
+    raise InvalidParameterException unless value.present? && expires_in.present? && cmk_key_id.present?
+
+    [value, expires_in, cmk_key_id]
   end
 end

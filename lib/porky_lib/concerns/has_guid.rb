@@ -15,7 +15,9 @@ module PorkyLib::HasGuid
     # rubocop:disable Naming/PredicateName
 
     def has_guid(prefix)
-      raise ArgumentError, "Prefix #{prefix} has already been registered by class #{PorkyLib::HasGuid.registry[prefix]}" if PorkyLib::HasGuid.registry[prefix].present?
+      if PorkyLib::HasGuid.registry[prefix].present?
+        raise ArgumentError, "Prefix #{prefix} has already been registered by class #{PorkyLib::HasGuid.registry[prefix]}"
+      end
 
       PorkyLib::HasGuid.registry[prefix] = self
 

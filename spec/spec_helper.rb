@@ -59,7 +59,7 @@ RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
 
   # stubs Rails related methods
-  config.before(:each) do
+  config.before do
     allow_message_expectations_on_nil
     allow(Rails).to receive(:logger).and_return(logger)
     allow(Rails.cache).to receive(:write)

@@ -42,8 +42,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop-rspec'
   spec.add_development_dependency 'rubocop_runner'
   spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency 'timecop'
   spec.add_development_dependency "sqlite3"
+  spec.add_development_dependency 'timecop'
 
   spec.add_dependency 'activerecord-rescue_from_duplicate'
   spec.add_dependency 'aws-sdk-kms'

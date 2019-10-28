@@ -12,7 +12,7 @@ ActiveRecord::Schema.define do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["guid"], name: "index_encryption_keys_on_guid", unique: true
-    t.index ["partition_guid", "key_epoch"], name: "index_encryption_keys", unique: true
+    t.index %w[partition_guid key_epoch], name: "index_encryption_keys", unique: true
   end
 
   create_table "encrypted_attributes_models", force: :cascade do |t|
