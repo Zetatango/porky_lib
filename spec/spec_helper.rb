@@ -23,6 +23,19 @@ require 'byebug'
 require 'logger'
 require 'msgpack'
 require 'porky_lib'
+require 'rails'
+require 'active_record'
+require 'active_support/all'
+require 'factories/encryption_key'
+require 'factories/encrypted_attributes_model'
+require 'redis'
+
+# setup temporary database for testing
+ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
+load File.dirname(__FILE__) + '/schema.rb'
+
+# used to stub Rails.logger
+logger = Logger.new(nil)
 
 Gem::Deprecate.skip = true
 PorkyLib::Config.configure(aws_client_mock: true)
@@ -40,6 +53,17 @@ RSpec.configure do |config|
     # ...rather than:
     #     # => "be bigger than 2"
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
+  end
+
+  # factory bot configuration
+  config.include FactoryBot::Syntax::Methods
+
+  # stubs Rails related methods
+  config.before(:each) do
+    allow_message_expectations_on_nil
+    allow(Rails).to receive(:logger).and_return(logger)
+    allow(Rails.cache).to receive(:write)
+    allow(Rails.cache).to receive(:read)
   end
 
   # rspec-mocks config goes here. You can use an alternate test double
