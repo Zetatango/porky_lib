@@ -2,6 +2,8 @@
 
 class EncryptedAttributesModel < PorkyLib::ApplicationRecord
   include PorkyLib::HasGuid
+  include PorkyLib::PartitionProvider
+  include PorkyLib::HasEncryptedAttributes
 
   has_guid 'eam'
 

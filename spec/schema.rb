@@ -17,8 +17,8 @@ ActiveRecord::Schema.define do
 
   create_table "encrypted_attributes_models", force: :cascade do |t|
     t.string "guid", null: false
-    t.string "partition_guid"
-    t.datetime "encryption_epoch"
+    t.string "partition_guid", null: false
+    t.datetime "encryption_epoch", null: false
     t.index ["guid"], name: "index_encrypted_attributes_models_on_guid", unique: true
   end
 end
