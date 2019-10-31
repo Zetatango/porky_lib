@@ -3,6 +3,8 @@
 require 'aws-sdk-s3'
 
 module PorkyLib::FileServiceHelper
+  extend Gem::Deprecate
+
   def file_size_invalid?(file_or_content)
     file_data(file_or_content).bytesize > max_size
   end
@@ -18,6 +20,7 @@ module PorkyLib::FileServiceHelper
       file_or_content
     end
   end
+  deprecate :file_data, :none, 2020, 01
 
   def write_tempfile(file_contents, file_key)
     tempfile = Tempfile.new(file_key)
@@ -68,4 +71,5 @@ module PorkyLib::FileServiceHelper
 
     File.file?(content_or_path)
   end
+  deprecate :a_path, :none, 2020, 01
 end

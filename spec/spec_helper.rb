@@ -22,6 +22,7 @@ require 'logger'
 require 'msgpack'
 require 'porky_lib'
 
+Gem::Deprecate.skip = true
 PorkyLib::Config.configure(aws_client_mock: true)
 
 RSpec.configure do |config|

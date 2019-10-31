@@ -3,6 +3,8 @@
 require 'singleton'
 
 class PorkyLib::FileService
+  extend Gem::Deprecate
+
   include Singleton
   include PorkyLib::FileServiceHelper
 
@@ -61,6 +63,7 @@ class PorkyLib::FileService
     data = file_data(file)
     write_helper(data, bucket_name, key_id, options)
   end
+  deprecate :write, 'write_file or write_data', 2020, 01
 
   def write_file(file, bucket_name, key_id, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
@@ -95,6 +98,7 @@ class PorkyLib::FileService
     # Remove tempfile from disk
     tempfile.unlink
   end
+  deprecate :overwrite_file, :none, 2020, 01
 
   def presigned_post_url(bucket_name, options = {})
     file_name = options[:file_name] || SecureRandom.uuid
