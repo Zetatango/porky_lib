@@ -71,5 +71,4 @@ module PorkyLib::FileServiceHelper
 
     File.file?(content_or_path)
   end
-  deprecate :a_path, :none, 2020, 01
 end
