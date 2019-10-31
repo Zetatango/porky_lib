@@ -7,6 +7,10 @@ module PorkyLib::FileServiceHelper
     file_data(file_or_content).bytesize > max_size
   end
 
+  def data_size_invalid?(data)
+    data.bytesize > max_size
+  end
+
   def file_data(file_or_content)
     if a_file?(file_or_content) || a_path?(file_or_content)
       File.read(file_or_content)

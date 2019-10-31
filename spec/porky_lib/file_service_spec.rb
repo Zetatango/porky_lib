@@ -94,125 +94,351 @@ RSpec.describe PorkyLib::FileService, type: :request do
     tempfile
   end
 
-  it 'write encrypted data to S3' do
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
-    expect(file_key).not_to be_nil
-  end
+  describe '#write' do
+    it 'write encrypted data to S3' do
+      file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+      expect(file_key).not_to be_nil
+    end
 
-  it 'write large encrypted data to S3' do
-    file_key = file_service.write(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"),
-                                  bucket_name, default_key_id)
-    expect(file_key).not_to be_nil
-  end
+    it 'write large encrypted data to S3' do
+      file_key = file_service.write(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"),
+                                    bucket_name, default_key_id)
+      expect(file_key).not_to be_nil
+    end
 
-  it 'write encrypted data to S3 with metadata' do
-    metadata = { content_type: 'test/data' }
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id, metadata: metadata)
-    expect(file_key).not_to be_nil
-  end
-
-  it 'write encrypted data to S3 with directory' do
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id, directory: '/directory1/dirA')
-    expect(file_key).not_to be_nil
-  end
-
-  it 'write file to S3' do
-    file_key = file_service.write(write_test_file(plaintext_data), bucket_name, default_key_id)
-    expect(file_key).not_to be_nil
-  end
-
-  it 'write large file to S3' do
-    PorkyLib::Config.configure(max_file_size: 10 * 1024)
-    expect do
-      file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")),
-                         bucket_name, default_key_id)
-    end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
-  end
-
-  it 'write file too large to S3' do
-    file_key = file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")),
-                                  bucket_name, default_key_id)
-    expect(file_key).not_to be_nil
-  end
-
-  it 'write file to S3 with metadata' do
-    tempfile = write_test_file(plaintext_data)
-    metadata = { content_type: 'test/data' }
-    file_key = file_service.write(tempfile, bucket_name, default_key_id, metadata: metadata)
-    expect(file_key).not_to be_nil
-  end
-
-  it 'overwrite encrypted data to S3' do
-    expect do
-      file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id)
-    end.not_to raise_exception
-  end
-
-  it 'overwrite large encrypted data to S3' do
-    expect do
-      file_service.overwrite_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"), default_file_key,
-                                  bucket_name, default_key_id)
-    end.not_to raise_exception
-  end
-
-  it 'overwrite encrypted data to S3 with metadata' do
-    expect do
+    it 'write encrypted data to S3 with metadata' do
       metadata = { content_type: 'test/data' }
-      file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id, metadata: metadata)
-    end.not_to raise_exception
+      file_key = file_service.write(plaintext_data, bucket_name, default_key_id, metadata: metadata)
+      expect(file_key).not_to be_nil
+    end
+
+    it 'write encrypted data to S3 with directory' do
+      file_key = file_service.write(plaintext_data, bucket_name, default_key_id, directory: '/directory1/dirA')
+      expect(file_key).not_to be_nil
+    end
+
+    it 'write file to S3' do
+      file_key = file_service.write(write_test_file(plaintext_data), bucket_name, default_key_id)
+      expect(file_key).not_to be_nil
+    end
+
+    it 'write large file to S3' do
+      PorkyLib::Config.configure(max_file_size: 10 * 1024)
+      expect do
+        file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")),
+                           bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
+    end
+
+    it 'write file too large to S3' do
+      file_key = file_service.write(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")),
+                                    bucket_name, default_key_id)
+      expect(file_key).not_to be_nil
+    end
+
+    it 'write file to S3 with metadata' do
+      tempfile = write_test_file(plaintext_data)
+      metadata = { content_type: 'test/data' }
+      file_key = file_service.write(tempfile, bucket_name, default_key_id, metadata: metadata)
+      expect(file_key).not_to be_nil
+    end
+
+    it 'attempt to write with file nil raises FileServiceError' do
+      expect do
+        file_service.write(nil, bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to write with bucket name nil raises FileServiceError' do
+      expect do
+        file_service.write(plaintext_data, nil, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to write with key ID nil raises FileServiceError' do
+      expect do
+        file_service.write(plaintext_data, bucket_name, nil)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to write to bucket without permission raises FileServiceError' do
+      Aws.config[:s3].delete(:stub_responses)
+      Aws.config[:s3] = {
+          stub_responses: {
+              put_object: 'Forbidden'
+          }
+      }
+      expect do
+        file_service.write(plaintext_data, bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to write to bucket that does not exist raises FileServiceError' do
+      Aws.config[:s3].delete(:stub_responses)
+      Aws.config[:s3] = {
+          stub_responses: {
+              put_object: 'NotFound'
+          }
+      }
+      expect do
+        file_service.write(plaintext_data, bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
   end
 
-  it 'overwrite file too large to S3' do
-    PorkyLib::Config.configure(max_file_size: 10 * 1024)
-    expect do
-      file_service.overwrite_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"), default_file_key,
-                                  bucket_name, default_key_id)
-    end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
+  describe '#write_file' do
+    it 'write file to S3' do
+      file_key = file_service.write_file(write_test_file(plaintext_data), bucket_name, default_key_id)
+      expect(file_key).not_to be_nil
+    end
+
+    it 'write large file to S3' do
+      PorkyLib::Config.configure(max_file_size: 10 * 1024)
+      expect do
+        file_service.write_file(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")),
+                                bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
+    end
+
+    it 'write file too large to S3' do
+      file_key = file_service.write_file(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")),
+                                         bucket_name, default_key_id)
+      expect(file_key).not_to be_nil
+    end
+
+    it 'write file to S3 with metadata' do
+      tempfile = write_test_file(plaintext_data)
+      metadata = { content_type: 'test/data' }
+      file_key = file_service.write_file(tempfile, bucket_name, default_key_id, metadata: metadata)
+      expect(file_key).not_to be_nil
+    end
+
+    it 'attempt to write with file nil raises FileServiceError' do
+      expect do
+        file_service.write_file(nil, bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to write with bucket name nil raises FileServiceError' do
+      expect do
+        file_service.write_file(write_test_file(plaintext_data), nil, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to write with key ID nil raises FileServiceError' do
+      expect do
+        file_service.write_file(write_test_file(plaintext_data), bucket_name, nil)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to write to bucket without permission raises FileServiceError' do
+      Aws.config[:s3].delete(:stub_responses)
+      Aws.config[:s3] = {
+          stub_responses: {
+              put_object: 'Forbidden'
+          }
+      }
+      expect do
+        file_service.write_file(write_test_file(plaintext_data), bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to write to bucket that does not exist raises FileServiceError' do
+      Aws.config[:s3].delete(:stub_responses)
+      Aws.config[:s3] = {
+          stub_responses: {
+              put_object: 'NotFound'
+          }
+      }
+      expect do
+        file_service.write(write_test_file(plaintext_data), bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
   end
 
-  it 'read encrypted data from S3' do
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+  describe '#write_data' do
+    it 'write encrypted data to S3' do
+      file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id)
+      expect(file_key).not_to be_nil
+    end
 
-    plaintext, should_reencrypt = file_service.read(bucket_name, file_key)
-    expect(plaintext_data).to eq(plaintext)
-    expect(should_reencrypt).to be_falsey
+    it 'write large encrypted data to S3' do
+      file_key = file_service.write_data(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"),
+                                         bucket_name, default_key_id)
+      expect(file_key).not_to be_nil
+    end
+
+    it 'write encrypted data to S3 with metadata' do
+      metadata = { content_type: 'test/data' }
+      file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id, metadata: metadata)
+      expect(file_key).not_to be_nil
+    end
+
+    it 'write encrypted data to S3 with directory' do
+      file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id, directory: '/directory1/dirA')
+      expect(file_key).not_to be_nil
+    end
+
+    it 'attempt to write with data nil raises FileServiceError' do
+      expect do
+        file_service.write_data(nil, bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to write with bucket name nil raises FileServiceError' do
+      expect do
+        file_service.write_data(plaintext_data, nil, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to write with key ID nil raises FileServiceError' do
+      expect do
+        file_service.write_data(plaintext_data, bucket_name, nil)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to write to bucket without permission raises FileServiceError' do
+      Aws.config[:s3].delete(:stub_responses)
+      Aws.config[:s3] = {
+          stub_responses: {
+              put_object: 'Forbidden'
+          }
+      }
+      expect do
+        file_service.write_data(plaintext_data, bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to write to bucket that does not exist raises FileServiceError' do
+      Aws.config[:s3].delete(:stub_responses)
+      Aws.config[:s3] = {
+          stub_responses: {
+              put_object: 'NotFound'
+          }
+      }
+      expect do
+        file_service.write_data(plaintext_data, bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
   end
 
-  it 'read encrypted data from S3 with directory' do
-    dir_name = 'directory1/dirA'
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id, directory: dir_name)
-    expect(file_key).to include(dir_name)
+  describe '#overwrite' do
+    it 'overwrite encrypted data to S3' do
+      expect do
+        file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id)
+      end.not_to raise_exception
+    end
 
-    plaintext, should_reencrypt = file_service.read(bucket_name, file_key)
-    expect(plaintext_data).to eq(plaintext)
-    expect(should_reencrypt).to be_falsey
+    it 'overwrite large encrypted data to S3' do
+      expect do
+        file_service.overwrite_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"), default_file_key,
+                                    bucket_name, default_key_id)
+      end.not_to raise_exception
+    end
+
+    it 'overwrite encrypted data to S3 with metadata' do
+      expect do
+        metadata = { content_type: 'test/data' }
+        file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id, metadata: metadata)
+      end.not_to raise_exception
+    end
+
+    it 'overwrite file too large to S3' do
+      PorkyLib::Config.configure(max_file_size: 10 * 1024)
+      expect do
+        file_service.overwrite_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"), default_file_key,
+                                    bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
+    end
+
+    it 'attempt to overwrite to bucket without permission raises FileServiceError' do
+      Aws.config[:s3].delete(:stub_responses)
+      Aws.config[:s3] = {
+          stub_responses: {
+              put_object: 'Forbidden'
+          }
+      }
+      expect do
+        file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to overwrite an existing file with nil file_key raise FileServiceError' do
+      expect do
+        file_service.overwrite_file(plaintext_data, nil, bucket_name, default_key_id)
+      end.to raise_error(PorkyLib::FileService::FileServiceError)
+    end
   end
 
-  it 'read encrypted data from S3 which should be re-encrypted' do
-    stub_data_to_be_reencrypted
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+  describe '#read' do
+    it 'read encrypted data from S3' do
+      file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
 
-    plaintext, should_reencrypt = file_service.read(bucket_name, file_key)
-    expect(plaintext_data).to eq(plaintext)
-    expect(should_reencrypt).to be_truthy
-  end
+      plaintext, should_reencrypt = file_service.read(bucket_name, file_key)
+      expect(plaintext_data).to eq(plaintext)
+      expect(should_reencrypt).to be_falsey
+    end
 
-  it 'read large encrypted data from S3' do
-    stub_large_file
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+    it 'read encrypted data from S3 with directory' do
+      dir_name = 'directory1/dirA'
+      file_key = file_service.write(plaintext_data, bucket_name, default_key_id, directory: dir_name)
+      expect(file_key).to include(dir_name)
 
-    plaintext, = file_service.read(bucket_name, file_key)
-    expect(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).to eq(plaintext)
-  end
+      plaintext, should_reencrypt = file_service.read(bucket_name, file_key)
+      expect(plaintext_data).to eq(plaintext)
+      expect(should_reencrypt).to be_falsey
+    end
 
-  it 'read encrypted data too large from S3' do
-    stub_large_file
-    file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+    it 'read encrypted data from S3 which should be re-encrypted' do
+      stub_data_to_be_reencrypted
+      file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
 
-    PorkyLib::Config.configure(max_file_size: 10 * 1024)
-    expect do
-      file_service.read(bucket_name, file_key)
-    end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
+      plaintext, should_reencrypt = file_service.read(bucket_name, file_key)
+      expect(plaintext_data).to eq(plaintext)
+      expect(should_reencrypt).to be_truthy
+    end
+
+    it 'read large encrypted data from S3' do
+      stub_large_file
+      file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+
+      plaintext, = file_service.read(bucket_name, file_key)
+      expect(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).to eq(plaintext)
+    end
+
+    it 'read encrypted data too large from S3' do
+      stub_large_file
+      file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+
+      PorkyLib::Config.configure(max_file_size: 10 * 1024)
+      expect do
+        file_service.read(bucket_name, file_key)
+      end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
+    end
+
+    it 'attempt to read from bucket without permission raises FileServiceError' do
+      Aws.config[:s3].delete(:stub_responses)
+      Aws.config[:s3] = {
+          stub_responses: {
+              get_object: 'Forbidden'
+          }
+      }
+      expect do
+        file_service.read(bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'attempt to read from bucket does not exist raises FileServiceError' do
+      Aws.config[:s3].delete(:stub_responses)
+      Aws.config[:s3] = {
+          stub_responses: {
+              get_object: 'NotFound'
+          }
+      }
+      expect do
+        file_service.read(bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
   end
 
   it 'file_contents contains associated metadata if provided' do
@@ -231,90 +457,6 @@ RSpec.describe PorkyLib::FileService, type: :request do
     file_data = JSON.parse(ciphertext_data, symbolize_names: true)
     file_contents = file_service.send(:file_contents, file_data[:key], file_data[:data], file_data[:nonce], nil)
     expect(JSON.parse(file_contents, symbolize_names: true)).not_to have_key(:metadata)
-  end
-
-  it 'attempt to write with file nil raises FileServiceError' do
-    expect do
-      file_service.write(nil, bucket_name, default_key_id)
-    end.to raise_exception(PorkyLib::FileService::FileServiceError)
-  end
-
-  it 'attempt to write with bucket name nil raises FileServiceError' do
-    expect do
-      file_service.write(plaintext_data, nil, default_key_id)
-    end.to raise_exception(PorkyLib::FileService::FileServiceError)
-  end
-
-  it 'attempt to write with key ID nil raises FileServiceError' do
-    expect do
-      file_service.write(plaintext_data, bucket_name, nil)
-    end.to raise_exception(PorkyLib::FileService::FileServiceError)
-  end
-
-  it 'attempt to write to bucket without permission raises FileServiceError' do
-    Aws.config[:s3].delete(:stub_responses)
-    Aws.config[:s3] = {
-      stub_responses: {
-        put_object: 'Forbidden'
-      }
-    }
-    expect do
-      file_service.write(plaintext_data, bucket_name, default_key_id)
-    end.to raise_exception(PorkyLib::FileService::FileServiceError)
-  end
-
-  it 'attempt to overwrite to bucket without permission raises FileServiceError' do
-    Aws.config[:s3].delete(:stub_responses)
-    Aws.config[:s3] = {
-      stub_responses: {
-        put_object: 'Forbidden'
-      }
-    }
-    expect do
-      file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id)
-    end.to raise_exception(PorkyLib::FileService::FileServiceError)
-  end
-
-  it 'attempt to write to bucket that does not exist raises FileServiceError' do
-    Aws.config[:s3].delete(:stub_responses)
-    Aws.config[:s3] = {
-      stub_responses: {
-        put_object: 'NotFound'
-      }
-    }
-    expect do
-      file_service.write(plaintext_data, bucket_name, default_key_id)
-    end.to raise_exception(PorkyLib::FileService::FileServiceError)
-  end
-
-  it 'attempt to read from bucket without permission raises FileServiceError' do
-    Aws.config[:s3].delete(:stub_responses)
-    Aws.config[:s3] = {
-      stub_responses: {
-        get_object: 'Forbidden'
-      }
-    }
-    expect do
-      file_service.read(bucket_name, default_key_id)
-    end.to raise_exception(PorkyLib::FileService::FileServiceError)
-  end
-
-  it 'attempt to read from bucket does not exist raises FileServiceError' do
-    Aws.config[:s3].delete(:stub_responses)
-    Aws.config[:s3] = {
-      stub_responses: {
-        get_object: 'NotFound'
-      }
-    }
-    expect do
-      file_service.read(bucket_name, default_key_id)
-    end.to raise_exception(PorkyLib::FileService::FileServiceError)
-  end
-
-  it 'attempt to overwrite an existing file with nil file_key raise FileServiceError' do
-    expect do
-      file_service.overwrite_file(plaintext_data, nil, bucket_name, default_key_id)
-    end.to raise_error(PorkyLib::FileService::FileServiceError)
   end
 
   it 'file_size_invalid? handles contents containing a null byte when reading a file' do

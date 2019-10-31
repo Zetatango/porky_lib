@@ -59,18 +59,23 @@ class PorkyLib::FileService
     raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if file_size_invalid?(file)
 
     data = file_data(file)
-    file_key = generate_file_key(options)
-    tempfile = encrypt_file_contents(data, key_id, file_key, options)
+    write_helper(data, bucket_name, key_id, options)
+  end
 
-    begin
-      perform_upload(bucket_name, file_key, tempfile, options)
-    rescue Aws::Errors::ServiceError => e
-      raise FileServiceError, "Attempt to upload a file to S3 failed.\n#{e.message}"
-    end
+  def write_file(file, bucket_name, key_id, options = {})
+    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
 
-    # Remove tempfile from disk
-    tempfile.unlink
-    file_key
+    data = File.read(file)
+    raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if data_size_invalid?(data)
+
+    write_helper(data, bucket_name, key_id, options)
+  end
+
+  def write_data(data, bucket_name, key_id, options = {})
+    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(data, bucket_name, key_id)
+    raise FileSizeTooLargeError, "Data size is larger than maximum allowed size of #{max_file_size}" if data_size_invalid?(data)
+
+    write_helper(data, bucket_name, key_id, options)
   end
 
   def overwrite_file(file, file_key, bucket_name, key_id, options = {})
@@ -113,6 +118,21 @@ class PorkyLib::FileService
   end
 
   private
+
+  def write_helper(data, bucket_name, key_id, options)
+    file_key = generate_file_key(options)
+    tempfile = encrypt_file_contents(data, key_id, file_key, options)
+
+    begin
+      perform_upload(bucket_name, file_key, tempfile, options)
+    rescue Aws::Errors::ServiceError => e
+      raise FileServiceError, "Attempt to upload a file to S3 failed.\n#{e.message}"
+    end
+
+    # Remove tempfile from disk
+    tempfile.unlink
+    file_key
+  end
 
   def decrypt_file_contents(tempfile)
     file_contents = tempfile.read
@@ -158,7 +178,7 @@ class PorkyLib::FileService
     @s3_client ||= Aws::S3::Client.new
   end
 
-  def input_invalid?(file, bucket_name, key_id)
-    file.nil? || bucket_name.nil? || key_id.nil?
+  def input_invalid?(file_or_data, bucket_name, key_id)
+    file_or_data.nil? || bucket_name.nil? || key_id.nil?
   end
 end
