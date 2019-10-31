@@ -164,9 +164,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'attempt to write to bucket without permission raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              put_object: 'Forbidden'
-          }
+        stub_responses: {
+          put_object: 'Forbidden'
+        }
       }
       expect do
         file_service.write(plaintext_data, bucket_name, default_key_id)
@@ -176,9 +176,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'attempt to write to bucket that does not exist raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              put_object: 'NotFound'
-          }
+        stub_responses: {
+          put_object: 'NotFound'
+        }
       }
       expect do
         file_service.write(plaintext_data, bucket_name, default_key_id)
@@ -234,9 +234,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'attempt to write to bucket without permission raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              put_object: 'Forbidden'
-          }
+        stub_responses: {
+          put_object: 'Forbidden'
+        }
       }
       expect do
         file_service.write_file(write_test_file(plaintext_data), bucket_name, default_key_id)
@@ -246,9 +246,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'attempt to write to bucket that does not exist raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              put_object: 'NotFound'
-          }
+        stub_responses: {
+          put_object: 'NotFound'
+        }
       }
       expect do
         file_service.write(write_test_file(plaintext_data), bucket_name, default_key_id)
@@ -300,9 +300,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'attempt to write to bucket without permission raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              put_object: 'Forbidden'
-          }
+        stub_responses: {
+          put_object: 'Forbidden'
+        }
       }
       expect do
         file_service.write_data(plaintext_data, bucket_name, default_key_id)
@@ -312,9 +312,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'attempt to write to bucket that does not exist raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              put_object: 'NotFound'
-          }
+        stub_responses: {
+          put_object: 'NotFound'
+        }
       }
       expect do
         file_service.write_data(plaintext_data, bucket_name, default_key_id)
@@ -354,9 +354,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'attempt to overwrite to bucket without permission raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              put_object: 'Forbidden'
-          }
+        stub_responses: {
+          put_object: 'Forbidden'
+        }
       }
       expect do
         file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id)
@@ -419,9 +419,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'attempt to read from bucket without permission raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              get_object: 'Forbidden'
-          }
+        stub_responses: {
+          get_object: 'Forbidden'
+        }
       }
       expect do
         file_service.read(bucket_name, default_key_id)
@@ -431,9 +431,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'attempt to read from bucket does not exist raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              get_object: 'NotFound'
-          }
+        stub_responses: {
+          get_object: 'NotFound'
+        }
       }
       expect do
         file_service.read(bucket_name, default_key_id)

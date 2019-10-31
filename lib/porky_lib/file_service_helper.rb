@@ -20,7 +20,7 @@ module PorkyLib::FileServiceHelper
       file_or_content
     end
   end
-  deprecate :file_data, :none, 2020, 01
+  deprecate :file_data, :none, 2020, 1
 
   def write_tempfile(file_contents, file_key)
     tempfile = Tempfile.new(file_key)

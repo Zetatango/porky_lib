@@ -153,7 +153,7 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
 
     it 'write large plaintext data to S3' do
       file_key = file_service.write_data(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"),
-                                    bucket_name)
+                                         bucket_name)
       expect(file_key).not_to be_nil
     end
 
@@ -183,9 +183,9 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     it 'attempt to write to bucket without permission raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              put_object: 'Forbidden'
-          }
+        stub_responses: {
+          put_object: 'Forbidden'
+        }
       }
       expect do
         file_service.write_data(plaintext_data, bucket_name)
@@ -195,9 +195,9 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     it 'attempt to write to bucket that does not exist raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              put_object: 'NotFound'
-          }
+        stub_responses: {
+          put_object: 'NotFound'
+        }
       }
       expect do
         file_service.write_data(plaintext_data, bucket_name)
@@ -210,13 +210,13 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
       PorkyLib::Config.configure(max_file_size: 10 * 1024)
       expect do
         file_service.write_file(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")),
-                           bucket_name)
+                                bucket_name)
       end.to raise_exception(PorkyLib::Unencrypted::FileService::FileSizeTooLargeError)
     end
 
     it 'write file too large to S3' do
       file_key = file_service.write_file(write_test_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")),
-                                    bucket_name)
+                                         bucket_name)
       expect(file_key).not_to be_nil
     end
 
@@ -242,9 +242,9 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     it 'attempt to write to bucket without permission raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              put_object: 'Forbidden'
-          }
+        stub_responses: {
+          put_object: 'Forbidden'
+        }
       }
       expect do
         file_service.write_file(write_test_file(plaintext_data), bucket_name)
@@ -254,9 +254,9 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     it 'attempt to write to bucket that does not exist raises FileServiceError' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
-          stub_responses: {
-              put_object: 'NotFound'
-          }
+        stub_responses: {
+          put_object: 'NotFound'
+        }
       }
       expect do
         file_service.write_file(write_test_file(plaintext_data), bucket_name)
