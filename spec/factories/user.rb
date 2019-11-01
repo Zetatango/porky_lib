@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 require 'factory_bot'
-require './spec/models/encrypted_attributes_model'
+require './spec/models/user'
 
 FactoryBot.define do
-  factory :encrypted_attributes_model, class: EncryptedAttributesModel do
+  factory :user, class: User do
     partition_guid { SecureRandom.base58(16) }
     encryption_epoch { SecureRandom.base58(16) }
   end

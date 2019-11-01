@@ -15,10 +15,19 @@ ActiveRecord::Schema.define do
     t.index %w[partition_guid key_epoch], name: "index_encryption_keys", unique: true
   end
 
-  create_table "encrypted_attributes_models", force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.string "guid", null: false
     t.string "partition_guid", null: false
     t.datetime "encryption_epoch", null: false
-    t.index ["guid"], name: "index_encrypted_attributes_models_on_guid", unique: true
+    t.index ["guid"], name: "index_users_on_guid", unique: true
+  end
+
+  create_table "profiles", force: :cascade do |t|
+    t.bigint "user_id"
+    t.string "guid"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["guid"], name: "index_profiles_on_guid", unique: true
+    t.index ["user_id"], name: "index_profiles_on_user_id"
   end
 end

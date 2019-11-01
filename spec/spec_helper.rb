@@ -27,7 +27,8 @@ require 'rails'
 require 'active_record'
 require 'active_support/all'
 require 'factories/encryption_key'
-require 'factories/encrypted_attributes_model'
+require 'factories/profile'
+require 'factories/user'
 require 'redis'
 
 # setup temporary database for testing

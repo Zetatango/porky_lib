@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class EncryptedAttributesModel < PorkyLib::ApplicationRecord
+class User < PorkyLib::ApplicationRecord
   include PorkyLib::HasGuid
   include PorkyLib::PartitionProvider
   include PorkyLib::HasEncryptedAttributes
