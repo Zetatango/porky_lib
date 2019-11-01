@@ -28,32 +28,24 @@ class PorkyLib::Unencrypted::FileService
 
   def write(file, bucket_name, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name)
-    raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if file_size_invalid?(file)
 
     data = file_data(file)
-    write_helper(data, bucket_name, options)
+    write_data(data, bucket_name, options)
   end
   deprecate :write, 'write_file or write_data', 2020, 1
 
   def write_file(file, bucket_name, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name)
+    raise FileServiceError, 'The specified file does not exist' unless File.file?(file)
 
     data = File.read(file)
-    raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if data_size_invalid?(data)
-
-    write_helper(data, bucket_name, options)
+    write_data(data, bucket_name, options)
   end
 
   def write_data(data, bucket_name, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(data, bucket_name)
     raise FileSizeTooLargeError, "Data size is larger than maximum allowed size of #{max_file_size}" if data_size_invalid?(data)
 
-    write_helper(data, bucket_name, options)
-  end
-
-  private
-
-  def write_helper(data, bucket_name, options)
     file_key = generate_file_key(options)
     tempfile = write_tempfile(data, file_key)
 
@@ -65,6 +57,8 @@ class PorkyLib::Unencrypted::FileService
 
     file_key
   end
+
+  private
 
   def input_invalid?(file_or_data, bucket_name)
     file_or_data.nil? || bucket_name.nil?

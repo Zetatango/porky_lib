@@ -58,35 +58,45 @@ class PorkyLib::FileService
 
   def write(file, bucket_name, key_id, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
-    raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if file_size_invalid?(file)
 
     data = file_data(file)
-    write_helper(data, bucket_name, key_id, options)
+    write_data(data, bucket_name, key_id, options)
   end
   deprecate :write, 'write_file or write_data', 2020, 1
 
   def write_file(file, bucket_name, key_id, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
+    raise FileServiceError, 'The specified file does not exist' unless File.file?(file)
 
     data = File.read(file)
-    raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if data_size_invalid?(data)
-
-    write_helper(data, bucket_name, key_id, options)
+    write_data(data, bucket_name, key_id, options)
   end
 
   def write_data(data, bucket_name, key_id, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(data, bucket_name, key_id)
     raise FileSizeTooLargeError, "Data size is larger than maximum allowed size of #{max_file_size}" if data_size_invalid?(data)
 
-    write_helper(data, bucket_name, key_id, options)
+    file_key = generate_file_key(options)
+    tempfile = encrypt_file_contents(data, key_id, file_key, options)
+
+    begin
+      perform_upload(bucket_name, file_key, tempfile, options)
+    rescue Aws::Errors::ServiceError => e
+      raise FileServiceError, "Attempt to upload a file to S3 failed.\n#{e.message}"
+    end
+
+    # Remove tempfile from disk
+    tempfile.unlink
+    file_key
   end
 
   def overwrite_file(file, file_key, bucket_name, key_id, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
     raise FileServiceError, 'Invalid input. file_key cannot be nil if overwriting an existing file' if file_key.nil?
-    raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if file_size_invalid?(file)
 
     data = file_data(file)
+    raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if data_size_invalid?(data)
+
     tempfile = encrypt_file_contents(data, key_id, file_key, options)
 
     begin
@@ -122,21 +132,6 @@ class PorkyLib::FileService
   end
 
   private
-
-  def write_helper(data, bucket_name, key_id, options)
-    file_key = generate_file_key(options)
-    tempfile = encrypt_file_contents(data, key_id, file_key, options)
-
-    begin
-      perform_upload(bucket_name, file_key, tempfile, options)
-    rescue Aws::Errors::ServiceError => e
-      raise FileServiceError, "Attempt to upload a file to S3 failed.\n#{e.message}"
-    end
-
-    # Remove tempfile from disk
-    tempfile.unlink
-    file_key
-  end
 
   def decrypt_file_contents(tempfile)
     file_contents = tempfile.read

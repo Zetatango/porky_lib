@@ -5,10 +5,6 @@ require 'aws-sdk-s3'
 module PorkyLib::FileServiceHelper
   extend Gem::Deprecate
 
-  def file_size_invalid?(file_or_content)
-    file_data(file_or_content).bytesize > max_size
-  end
-
   def data_size_invalid?(data)
     data.bytesize > max_size
   end

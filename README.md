@@ -175,7 +175,6 @@ file_key = PorkyLib::FileService.write_file(file, bucket_name, key_id, options)
 
 ### To Write Data To AWS S3
 ```ruby
-# --- DEPRECATED --- Please use write_data or write_file instead of write
 # Where data is the raw data to encrypt and upload to S3
 # bucket_name is the name of the S3 bucket to write to
 # key_id is the ID of the CMK to use to generate a data encryption key to encrypt the file data
@@ -183,8 +182,9 @@ file_key = PorkyLib::FileService.write_file(file, bucket_name, key_id, options)
 file_key = PorkyLib::FileService.write_data(data, bucket_name, key_id, options)
 ```
 
-### To Write Unencrypted Files To AWS S3
+### To Write Unencrypted To AWS S3
 ```ruby
+# --- DEPRECATED --- Please use write_data or write_file instead of write
 # Where file is the data to upload to S3 (can be a path or raw data or ruby file object)
 # bucket_name is the name of the S3 bucket to write to
 # options is an optional parameter for specifying optional metadata about the file
