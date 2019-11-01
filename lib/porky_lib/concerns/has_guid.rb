@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'activerecord-rescue_from_duplicate'
+require 'active_support'
 
 module PorkyLib::HasGuid
   extend ActiveSupport::Concern
@@ -26,7 +26,6 @@ module PorkyLib::HasGuid
           prefix
         end
 
-        rescue_from_duplicate :guid
         before_create :generate_guid
         validate :ensure_guid_does_not_change
 
