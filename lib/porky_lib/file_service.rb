@@ -70,6 +70,10 @@ class PorkyLib::FileService
 
     data = File.read(file)
     write_data(data, bucket_name, key_id, options)
+  rescue Errno::ENOENT
+    raise FileServiceError, 'The specified file does not exist'
+  rescue Errno::EACCES
+    raise FileServiceError, 'The specified file cannot be read, no permissions'
   end
 
   def write_data(data, bucket_name, key_id, options = {})

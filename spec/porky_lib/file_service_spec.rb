@@ -113,21 +113,42 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
-    it 'reads the data from a file object correctly' do
+    it 'writes the right content to S3 if file object is used' do
+      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file) do | _, tempfile_path|
+        tempfile = write_test_file(File.read(tempfile_path))
+        tempfile.seek(0)
+
+        message, _ = file_service.send(:decrypt_file_contents, tempfile)
+        expect(message).to eq(plaintext_data)
+      end
+
       file = write_test_file(plaintext_data)
-      file_key = file_service.write(file, bucket_name, default_key_id)
-      expect(file_key).not_to be_nil
+      file_service.write(file, bucket_name, default_key_id)
     end
 
-    it 'reads the data from a path correctly' do
+    it 'writes the right content to S3 if path is used' do
+      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file) do | _, tempfile_path|
+        tempfile = write_test_file(File.read(tempfile_path))
+        tempfile.seek(0)
+
+        message, _ = file_service.send(:decrypt_file_contents, tempfile)
+        expect(message).to eq(plaintext_data)
+      end
+
       path = write_test_file(plaintext_data).path
-      file_key = file_service.write(path, bucket_name, default_key_id)
-      expect(file_key).not_to be_nil
+      file_service.write(path, bucket_name, default_key_id)
     end
 
-    it 'reads the data from content correctly' do
-      file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
-      expect(file_key).not_to be_nil
+    it 'writes the right content to S3 if content is used' do
+      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file) do | _, tempfile_path|
+        tempfile = write_test_file(File.read(tempfile_path))
+        tempfile.seek(0)
+
+        message, _ = file_service.send(:decrypt_file_contents, tempfile)
+        expect(message).to eq(plaintext_data)
+      end
+
+      file_service.write(plaintext_data, bucket_name, default_key_id)
     end
 
     it 'write handles contents containing a null byte when reading a file' do
@@ -148,6 +169,38 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'write file to s3' do
       file_key = file_service.write_file(write_test_file(plaintext_data), bucket_name, default_key_id)
       expect(file_key).not_to be_nil
+    end
+
+    it 'writes the right content to S3 if file object is used' do
+      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file) do | _, tempfile_path|
+        tempfile = write_test_file(File.read(tempfile_path))
+        tempfile.seek(0)
+
+        message, _ = file_service.send(:decrypt_file_contents, tempfile)
+        expect(message).to eq(plaintext_data)
+      end
+
+      file = write_test_file(plaintext_data)
+      file_service.write_file(file, bucket_name, default_key_id)
+    end
+
+    it 'writes the right content to S3 if path is used' do
+      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file) do | _, tempfile_path|
+        tempfile = write_test_file(File.read(tempfile_path))
+        tempfile.seek(0)
+
+        message, _ = file_service.send(:decrypt_file_contents, tempfile)
+        expect(message).to eq(plaintext_data)
+      end
+
+      path = write_test_file(plaintext_data).path
+      file_service.write_file(path, bucket_name, default_key_id)
+    end
+
+    it 'write_file handles if file path does not exist' do
+      expect do
+        file_service.write_file('non_existent_path', bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
     it 'write_file handles if file path does not exist' do
@@ -196,6 +249,18 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'write encrypted data to S3 with directory' do
       file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id, directory: '/directory1/dirA')
       expect(file_key).not_to be_nil
+    end
+
+    it 'writes the right content to S3 if content is used' do
+      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file) do | _, tempfile_path|
+        tempfile = write_test_file(File.read(tempfile_path))
+        tempfile.seek(0)
+
+        message, _ = file_service.send(:decrypt_file_contents, tempfile)
+        expect(message).to eq(plaintext_data)
+      end
+
+      file_service.write_data(plaintext_data, bucket_name, default_key_id)
     end
 
     it 'attempt to write with data nil raises FileServiceError' do
