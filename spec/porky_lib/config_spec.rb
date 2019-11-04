@@ -22,26 +22,28 @@ RSpec.describe PorkyLib::Config, type: :request do
     expect(described_class.logger).to be_a(Logger)
   end
 
-  it 'config does not set key/value for unknown key' do
-    described_class.configure(foo: 'bar')
-    expect(described_class.config).to eq(default_config)
-  end
+  describe '#config' do
+    it 'does not set key/value for unknown key' do
+      described_class.configure(foo: 'bar')
+      expect(described_class.config).to eq(default_config)
+    end
 
-  it 'config sets aws_region to a known value' do
-    described_class.configure(aws_region: 'us-east-1')
-    expect(described_class.config).to have_key(:aws_region)
-    expect(described_class.config).to have_value('us-east-1')
-  end
+    it 'sets aws_region to a known value' do
+      described_class.configure(aws_region: 'us-east-1')
+      expect(described_class.config).to have_key(:aws_region)
+      expect(described_class.config).to have_value('us-east-1')
+    end
 
-  it 'config sets aws_key_id to a known value' do
-    described_class.configure(aws_key_id: 'ABC123')
-    expect(described_class.config).to have_key(:aws_key_id)
-    expect(described_class.config).to have_value('ABC123')
-  end
+    it 'sets aws_key_id to a known value' do
+      described_class.configure(aws_key_id: 'ABC123')
+      expect(described_class.config).to have_key(:aws_key_id)
+      expect(described_class.config).to have_value('ABC123')
+    end
 
-  it 'config sets aws_key_secret to a known value' do
-    described_class.configure(aws_key_secret: 's3cr3t')
-    expect(described_class.config).to have_key(:aws_key_secret)
-    expect(described_class.config).to have_value('s3cr3t')
+    it 'sets aws_key_secret to a known value' do
+      described_class.configure(aws_key_secret: 's3cr3t')
+      expect(described_class.config).to have_key(:aws_key_secret)
+      expect(described_class.config).to have_value('s3cr3t')
+    end
   end
 end
