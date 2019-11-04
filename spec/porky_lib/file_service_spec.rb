@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe PorkyLib::FileService, type: :request do
   let(:file_service) { described_class.clone.instance }
+  let(:aws_s3_object) { instance_double(Aws::S3::Object) }
   let(:default_config) do
     { aws_region: 'us-east-1',
       aws_key_id: 'abc',
@@ -113,12 +114,16 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
+    # rubocop:disable RSpec/MessageSpies
     it 'writes the right content to S3 if file object is used' do
-      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file) do | _, tempfile_path|
-        tempfile = write_test_file(File.read(tempfile_path))
-        tempfile.seek(0)
+      allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
+      allow(aws_s3_object).to receive(:upload_file)
 
-        message, _ = file_service.send(:decrypt_file_contents, tempfile)
+      expect(aws_s3_object).to receive(:upload_file) do |tempfile_path|
+        tempfile = write_test_file(File.read(tempfile_path))
+        tempfile.rewind
+
+        message, = file_service.send(:decrypt_file_contents, tempfile)
         expect(message).to eq(plaintext_data)
       end
 
@@ -127,11 +132,14 @@ RSpec.describe PorkyLib::FileService, type: :request do
     end
 
     it 'writes the right content to S3 if path is used' do
-      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file) do | _, tempfile_path|
-        tempfile = write_test_file(File.read(tempfile_path))
-        tempfile.seek(0)
+      allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
+      allow(aws_s3_object).to receive(:upload_file)
 
-        message, _ = file_service.send(:decrypt_file_contents, tempfile)
+      expect(aws_s3_object).to receive(:upload_file) do |tempfile_path|
+        tempfile = write_test_file(File.read(tempfile_path))
+        tempfile.rewind
+
+        message, = file_service.send(:decrypt_file_contents, tempfile)
         expect(message).to eq(plaintext_data)
       end
 
@@ -140,16 +148,20 @@ RSpec.describe PorkyLib::FileService, type: :request do
     end
 
     it 'writes the right content to S3 if content is used' do
-      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file) do | _, tempfile_path|
-        tempfile = write_test_file(File.read(tempfile_path))
-        tempfile.seek(0)
+      allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
+      allow(aws_s3_object).to receive(:upload_file)
 
-        message, _ = file_service.send(:decrypt_file_contents, tempfile)
+      expect(aws_s3_object).to receive(:upload_file) do |tempfile_path|
+        tempfile = write_test_file(File.read(tempfile_path))
+        tempfile.rewind
+
+        message, = file_service.send(:decrypt_file_contents, tempfile)
         expect(message).to eq(plaintext_data)
       end
 
       file_service.write(plaintext_data, bucket_name, default_key_id)
     end
+    # rubocop:enable RSpec/MessageSpies
 
     it 'handles contents containing a null byte when reading a file' do
       null_byte_contents = "\xA0\0"
@@ -171,12 +183,16 @@ RSpec.describe PorkyLib::FileService, type: :request do
       expect(file_key).not_to be_nil
     end
 
+    # rubocop:disable RSpec/MessageSpies
     it 'writes the right content to S3 if file object is used' do
-      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file) do | _, tempfile_path|
-        tempfile = write_test_file(File.read(tempfile_path))
-        tempfile.seek(0)
+      allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
+      allow(aws_s3_object).to receive(:upload_file)
 
-        message, _ = file_service.send(:decrypt_file_contents, tempfile)
+      expect(aws_s3_object).to receive(:upload_file) do |tempfile_path|
+        tempfile = write_test_file(File.read(tempfile_path))
+        tempfile.rewind
+
+        message, = file_service.send(:decrypt_file_contents, tempfile)
         expect(message).to eq(plaintext_data)
       end
 
@@ -185,17 +201,21 @@ RSpec.describe PorkyLib::FileService, type: :request do
     end
 
     it 'writes the right content to S3 if path is used' do
-      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file) do | _, tempfile_path|
-        tempfile = write_test_file(File.read(tempfile_path))
-        tempfile.seek(0)
+      allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
+      allow(aws_s3_object).to receive(:upload_file)
 
-        message, _ = file_service.send(:decrypt_file_contents, tempfile)
+      expect(aws_s3_object).to receive(:upload_file) do |tempfile_path|
+        tempfile = write_test_file(File.read(tempfile_path))
+        tempfile.rewind
+
+        message, = file_service.send(:decrypt_file_contents, tempfile)
         expect(message).to eq(plaintext_data)
       end
 
       path = write_test_file(plaintext_data).path
       file_service.write_file(path, bucket_name, default_key_id)
     end
+    # rubocop:enable RSpec/MessageSpies
 
     it 'raises FileServiceError when file path does not exist' do
       expect do
@@ -245,17 +265,22 @@ RSpec.describe PorkyLib::FileService, type: :request do
       expect(file_key).not_to be_nil
     end
 
+    # rubocop:disable RSpec/MessageSpies
     it 'writes the right content to S3 if content is used' do
-      expect_any_instance_of(Aws::S3::Object).to receive(:upload_file) do | _, tempfile_path|
-        tempfile = write_test_file(File.read(tempfile_path))
-        tempfile.seek(0)
+      allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
+      allow(aws_s3_object).to receive(:upload_file)
 
-        message, _ = file_service.send(:decrypt_file_contents, tempfile)
+      expect(aws_s3_object).to receive(:upload_file) do |tempfile_path|
+        tempfile = write_test_file(File.read(tempfile_path))
+        tempfile.rewind
+
+        message, = file_service.send(:decrypt_file_contents, tempfile)
         expect(message).to eq(plaintext_data)
       end
 
       file_service.write_data(plaintext_data, bucket_name, default_key_id)
     end
+    # rubocop:enable RSpec/MessageSpies
 
     it 'raises FileServiceError when data is nil ' do
       expect do
