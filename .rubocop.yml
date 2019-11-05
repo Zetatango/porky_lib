@@ -9,6 +9,7 @@ AllCops:
     - node_modules/**/*
     - output/**/*
     - vendor/**/*
+    - spec/porky_lib/data/*
   TargetRubyVersion: 2.3.7
   RSpec:
     Patterns:

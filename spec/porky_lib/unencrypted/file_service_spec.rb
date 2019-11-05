@@ -18,6 +18,10 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
   let(:default_file_key) { 'file_key' }
   let(:plaintext_data) { 'abc123' }
 
+  # ASCII_8BIT String with character, \xC3, has undefined conversion from ACSII-8BIT to UTF-8
+  let(:binary_contents) { (+"\xC3Hello").force_encoding("ASCII-8BIT") }
+  let(:null_byte_contents) { (+"\xA0\0").force_encoding("ASCII-8BIT") }
+
   before do
     PorkyLib::Config.configure(default_config)
     PorkyLib::Config.initialize_aws
@@ -60,6 +64,20 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     tempfile
   end
 
+  def test_file_content(expected_content, binary = false)
+    allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
+    allow(aws_s3_object).to receive(:upload_file)
+
+    file_key = yield
+
+    expect(file_key).not_to be_nil
+    expect(aws_s3_object).to have_received(:upload_file) do |tempfile_path|
+      data = File.read(tempfile_path)
+      data = (+data).force_encoding("ASCII-8BIT") if binary
+      expect(data).to eq(expected_content)
+    end
+  end
+
   describe '#write' do
     it 'raises FileServiceError when file is nil' do
       expect do
@@ -74,51 +92,46 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     end
 
     it 'writes the right content to S3 if file object is used' do
-      allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
-      allow(aws_s3_object).to receive(:upload_file)
-
       file = write_test_file(plaintext_data)
-      file_service.write(file, bucket_name)
 
-      expect(aws_s3_object).to have_received(:upload_file) do |tempfile_path|
-        expect(File.read(tempfile_path)).to eq(plaintext_data)
+      test_file_content(plaintext_data) do
+        file_service.write(file, bucket_name)
       end
     end
 
     it 'writes the right content to S3 if path is used' do
-      allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
-      allow(aws_s3_object).to receive(:upload_file)
-
       path = write_test_file(plaintext_data).path
-      file_service.write(path, bucket_name)
 
-      expect(aws_s3_object).to have_received(:upload_file) do |tempfile_path|
-        expect(File.read(tempfile_path)).to eq(plaintext_data)
+      test_file_content(plaintext_data) do
+        file_service.write(path, bucket_name)
+      end
+    end
+
+    it 'writes the right image file content to S3 if path is used' do
+      path = "spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}image.png"
+      data = File.read(path)
+
+      test_file_content(data) do
+        file_service.write(path, bucket_name)
       end
     end
 
     it 'writes the right content to S3 if content is used' do
-      allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
-      allow(aws_s3_object).to receive(:upload_file)
-
-      file_service.write(plaintext_data, bucket_name)
-
-      expect(aws_s3_object).to have_received(:upload_file) do |tempfile_path|
-        expect(File.read(tempfile_path)).to eq(plaintext_data)
+      test_file_content(plaintext_data) do
+        file_service.write(plaintext_data, bucket_name)
       end
     end
 
-    it 'handles contents containing a null byte when reading a file' do
-      null_byte_contents = "\xA0\0"
-      file_key = file_service.write(null_byte_contents, bucket_name)
-      expect(file_key).not_to be_nil
+    it 'handles contents containing a null byte when reading a file and writes the right content' do
+      test_file_content(null_byte_contents, true) do
+        file_service.write(null_byte_contents, bucket_name)
+      end
     end
 
-    it 'handles content encoded as ASCII_8BIT (BINARY) when creating the tempfile' do
-      # ASCII_8BIT String with character, \xC3, has undefined conversion from ACSII-8BIT to UTF-8
-      my_file_contents = "\xC3Hello"
-      file_key = file_service.write(my_file_contents, bucket_name)
-      expect(file_key).not_to be_nil
+    it 'handles content encoded as ASCII_8BIT (BINARY) when creating the tempfile and writes the right content' do
+      test_file_content(binary_contents, true) do
+        file_service.write(binary_contents, bucket_name)
+      end
     end
   end
 
@@ -129,33 +142,31 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     end
 
     it 'writes the right content to S3 if file object is used' do
-      allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
-      allow(aws_s3_object).to receive(:upload_file)
-
       file = write_test_file(plaintext_data)
-      file_service.write_file(file, bucket_name)
 
-      expect(aws_s3_object).to have_received(:upload_file) do |tempfile_path|
-        expect(File.read(tempfile_path)).to eq(plaintext_data)
+      test_file_content(plaintext_data) do
+        file_service.write_file(file, bucket_name)
       end
     end
 
     it 'writes the right content to S3 if path is used' do
-      allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
-      allow(aws_s3_object).to receive(:upload_file)
-
       path = write_test_file(plaintext_data).path
-      file_service.write_file(path, bucket_name)
 
-      expect(aws_s3_object).to have_received(:upload_file) do |tempfile_path|
-        expect(File.read(tempfile_path)).to eq(plaintext_data)
+      test_file_content(plaintext_data) do
+        file_service.write_file(path, bucket_name)
       end
     end
 
-    it 'handles if file path does not exist' do
+    it 'raises FileServiceError when file path does not exist' do
       expect do
         file_service.write_file('non_existent_path', bucket_name)
-      end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
+      end.to raise_exception(PorkyLib::FileServiceHelper::FileServiceError)
+    end
+
+    it 'raises FileServiceError when file cannot be read (no permission)' do
+      expect do
+        file_service.write_file("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}no_permission", bucket_name)
+      end.to raise_exception(PorkyLib::FileServiceHelper::FileServiceError)
     end
 
     it 'raises FileServiceError when file is nil' do
@@ -195,14 +206,25 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     end
 
     it 'writes the right content to S3 if content is used' do
-      allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
-      allow(aws_s3_object).to receive(:upload_file)
-
-      file_service.write_data(plaintext_data, bucket_name)
-
-      expect(aws_s3_object).to have_received(:upload_file) do |tempfile_path|
-        expect(File.read(tempfile_path)).to eq(plaintext_data)
+      test_file_content(plaintext_data) do
+        file_service.write_data(plaintext_data, bucket_name)
       end
+    end
+
+    it 'writes the right image file content to S3 if content is used' do
+      data = File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}image.png")
+
+      test_file_content(data) do
+        file_service.write_data(data, bucket_name)
+      end
+    end
+
+    it 'raises FileSizeTooLargeError when data is bigger than max_file_size' do
+      allow(PorkyLib::Config).to receive(:config).and_return(PorkyLib::Config.config.merge(max_file_size: 1))
+
+      expect do
+        file_service.write_data(plaintext_data, bucket_name)
+      end.to raise_exception(PorkyLib::Unencrypted::FileService::FileSizeTooLargeError)
     end
 
     it 'raises FileServiceError when data is nil' do
@@ -241,17 +263,16 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
       end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
     end
 
-    it 'handles contents containing a null byte when reading a file' do
-      null_byte_contents = "\xA0\0"
-      file_key = file_service.write_data(null_byte_contents, bucket_name)
-      expect(file_key).not_to be_nil
+    it 'handles contents containing a null byte when reading a file and writes the right content' do
+      test_file_content(null_byte_contents, true) do
+        file_service.write_data(null_byte_contents, bucket_name)
+      end
     end
 
-    it 'handles content encoded as ASCII_8BIT (BINARY) when creating the tempfile' do
-      # ASCII_8BIT String with character, \xC3, has undefined conversion from ACSII-8BIT to UTF-8
-      my_file_contents = "\xC3Hello"
-      file_key = file_service.write_data(my_file_contents, bucket_name)
-      expect(file_key).not_to be_nil
+    it 'handles content encoded as ASCII_8BIT (BINARY) when creating the tempfile and writes the right content' do
+      test_file_content(binary_contents, true) do
+        file_service.write_data(binary_contents, bucket_name)
+      end
     end
   end
 

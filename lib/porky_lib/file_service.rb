@@ -59,21 +59,18 @@ class PorkyLib::FileService
   def write(file, bucket_name, key_id, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
 
-    data = file_data(file)
-    write_data(data, bucket_name, key_id, options)
+    if file?(file)
+      write_file(file, bucket_name, key_id, options)
+    else
+      write_data(file, bucket_name, key_id, options)
+    end
   end
   deprecate :write, 'write_file or write_data', 2020, 1
 
   def write_file(file, bucket_name, key_id, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
-    raise FileServiceError, 'The specified file does not exist' unless File.file?(file)
 
-    data = File.read(file)
-    write_data(data, bucket_name, key_id, options)
-  rescue Errno::ENOENT
-    raise FileServiceError, 'The specified file does not exist'
-  rescue Errno::EACCES
-    raise FileServiceError, 'The specified file cannot be read, no permissions'
+    write_data(read_file(file), bucket_name, key_id, options)
   end
 
   def write_data(data, bucket_name, key_id, options = {})
