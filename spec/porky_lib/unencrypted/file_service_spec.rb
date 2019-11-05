@@ -164,8 +164,11 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     end
 
     it 'raises FileServiceError when file cannot be read (no permission)' do
+      path = write_test_file(plaintext_data).path
+
       expect do
-        file_service.write_file("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}no_permission", bucket_name)
+        File.chmod(0000, path)
+        file_service.write_file(path, bucket_name)
       end.to raise_exception(PorkyLib::FileServiceHelper::FileServiceError)
     end
 
