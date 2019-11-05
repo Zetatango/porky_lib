@@ -215,7 +215,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
       path = write_test_file(plaintext_data).path
 
       expect do
-        File.chmod(0000, path)
+        File.chmod(0o000, path)
         file_service.write_file(path, bucket_name, default_key_id)
       end.to raise_exception(PorkyLib::FileServiceHelper::FileServiceError)
     end
