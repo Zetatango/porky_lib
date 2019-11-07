@@ -99,26 +99,24 @@ RSpec.describe PorkyLib::FileService, type: :request do
     tempfile
   end
 
-  # rubocop:disable RSpec/MessageSpies
   def test_file_content(expected_content, binary = false)
     allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
     allow(aws_s3_object).to receive(:upload_file)
+    allow_any_instance_of(Tempfile).to receive(:unlink)
 
-    expect(aws_s3_object).to receive(:upload_file) do |tempfile_path|
+    file_key = yield
+
+    expect(aws_s3_object).to have_received(:upload_file) do |tempfile_path|
       tempfile = write_test_file(File.read(tempfile_path))
       tempfile.rewind
 
       message, = file_service.send(:decrypt_file_contents, tempfile)
-
       message = (+message).force_encoding('ASCII-8BIT') if binary
+
       expect(message).to eq(expected_content)
     end
-
-    file_key = yield
-
     expect(file_key).not_to be_nil
   end
-  # rubocop:enable RSpec/MessageSpies
 
   describe '#write' do
     it 'raises FileServiceError when file is nil' do
@@ -340,6 +338,31 @@ RSpec.describe PorkyLib::FileService, type: :request do
   end
 
   describe '#overwrite' do
+    it 'overwrites the right content to S3 if file object is used' do
+      file = write_test_file(plaintext_data)
+
+      expect do
+        file_service.overwrite_file(file, default_file_key, bucket_name, default_key_id)
+      end.not_to raise_exception
+    end
+
+    it 'overwrites the right content to S3 if path is used' do
+      path = write_test_file(plaintext_data).path
+
+      expect do
+        file_service.overwrite_file(path, default_file_key, bucket_name, default_key_id)
+      end.not_to raise_exception
+    end
+
+    it 'overwrites FileServiceError when file cannot be read (no permission)' do
+      path = write_test_file(plaintext_data).path
+
+      expect do
+        File.chmod(0o000, path)
+        file_service.overwrite_file(path, default_file_key, bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileServiceHelper::FileServiceError)
+    end
+
     it 'overwrites encrypted data to S3' do
       expect do
         file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id)
@@ -360,7 +383,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.not_to raise_exception
     end
 
-    it 'overwrites file too large to S3' do
+    it 'overwrites encrypted data too large to S3' do
       PorkyLib::Config.configure(max_file_size: 10 * 1024)
       expect do
         file_service.overwrite_file(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext"), default_file_key,
@@ -380,11 +403,30 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
+    it 'raises FileServiceError when file is nil' do
+      expect do
+        file_service.overwrite_file(nil, default_file_key, bucket_name, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
     it 'raises FileServiceError when overwriting an existing file with nil file_key ' do
       expect do
         file_service.overwrite_file(plaintext_data, nil, bucket_name, default_key_id)
       end.to raise_error(PorkyLib::FileService::FileServiceError)
     end
+
+    it 'raises FileServiceError when bucket name is nil' do
+      expect do
+        file_service.overwrite_file(plaintext_data, default_file_key, nil, default_key_id)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
+    it 'raises FileServiceError when key ID is nil ' do
+      expect do
+        file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, nil)
+      end.to raise_exception(PorkyLib::FileService::FileServiceError)
+    end
+
   end
 
   describe '#read' do

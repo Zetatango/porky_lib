@@ -13,7 +13,7 @@ module PorkyLib::FileServiceHelper
 
   def file_data(file_or_content)
     if file?(file_or_content)
-      File.read(file_or_content)
+      read_file(file_or_content)
     else
       file_or_content
     end

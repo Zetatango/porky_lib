@@ -92,7 +92,7 @@ class PorkyLib::FileService
   end
 
   def overwrite_file(file, file_key, bucket_name, key_id, options = {})
-    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
+    raise FileServiceError, 'Invalid input. One or more input values is nil' if overwrite_input_invalid?(file, file_key, bucket_name, key_id)
     raise FileServiceError, 'Invalid input. file_key cannot be nil if overwriting an existing file' if file_key.nil?
 
     data = file_data(file)
@@ -180,5 +180,9 @@ class PorkyLib::FileService
 
   def input_invalid?(file_or_data, bucket_name, key_id)
     file_or_data.nil? || bucket_name.nil? || key_id.nil?
+  end
+
+  def overwrite_input_invalid?(file_or_data, file_key, bucket_name, key_id)
+    file_or_data.nil? || file_key.nil? || bucket_name.nil? || key_id.nil?
   end
 end
