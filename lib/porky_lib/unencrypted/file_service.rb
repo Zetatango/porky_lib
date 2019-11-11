@@ -3,6 +3,8 @@
 require 'singleton'
 
 class PorkyLib::Unencrypted::FileService
+  extend Gem::Deprecate
+
   include Singleton
   include PorkyLib::FileServiceHelper
 
@@ -26,10 +28,27 @@ class PorkyLib::Unencrypted::FileService
 
   def write(file, bucket_name, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name)
-    raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if file_size_invalid?(file)
+
+    if file?(file)
+      write_file(file, bucket_name, options)
+    else
+      write_data(file, bucket_name, options)
+    end
+  end
+  deprecate :write, 'write_file or write_data', 2020, 1
+
+  def write_file(file, bucket_name, options = {})
+    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name)
+
+    write_data(read_file(file), bucket_name, options)
+  end
+
+  def write_data(data, bucket_name, options = {})
+    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(data, bucket_name)
+    raise FileSizeTooLargeError, "Data size is larger than maximum allowed size of #{max_file_size}" if data_size_invalid?(data)
 
     file_key = generate_file_key(options)
-    tempfile = write_tempfile(file_data(file), file_key)
+    tempfile = write_tempfile(data, file_key)
 
     begin
       perform_upload(bucket_name, file_key, tempfile, options)
@@ -42,7 +61,7 @@ class PorkyLib::Unencrypted::FileService
 
   private
 
-  def input_invalid?(file, bucket_name)
-    file.nil? || bucket_name.nil?
+  def input_invalid?(file_or_data, bucket_name)
+    file_or_data.nil? || bucket_name.nil?
   end
 end

@@ -3,17 +3,27 @@
 require 'aws-sdk-s3'
 
 module PorkyLib::FileServiceHelper
-  def file_size_invalid?(file_or_content)
-    if a_file?(file_or_content)
-      File.size(file_or_content) > max_size
-    else
-      file_or_content.bytesize > max_size
-    end
+  extend Gem::Deprecate
+
+  class FileServiceError < StandardError; end
+
+  def data_size_invalid?(data)
+    data.bytesize > max_size
   end
 
   def file_data(file_or_content)
-    a_file?(file_or_content) ? File.read(file_or_content) : file_or_content
+    if file?(file_or_content)
+      read_file(file_or_content)
+    else
+      file_or_content
+    end
   end
+  deprecate :file_data, :none, 2020, 1
+
+  def file?(file_or_content)
+    a_file?(file_or_content) || a_path?(file_or_content)
+  end
+  deprecate :file?, :none, 2020, 1
 
   def write_tempfile(file_contents, file_key)
     tempfile = Tempfile.new(file_key)
@@ -21,6 +31,16 @@ module PorkyLib::FileServiceHelper
     tempfile.close
 
     tempfile
+  end
+
+  def read_file(file)
+    raise FileServiceError, 'file cannot be nil' if file.nil?
+    return file if !a_file?(file) && contain_null_byte?(file)
+    raise FileServiceError, 'The specified file does not exist' unless File.file?(file)
+
+    File.read(file)
+  rescue Errno::EACCES
+    raise FileServiceError, 'The specified file cannot be read, no permissions'
   end
 
   def perform_upload(bucket_name, file_key, tempfile, options)
@@ -57,5 +77,18 @@ module PorkyLib::FileServiceHelper
 
   def a_file?(file_or_content)
     !file_or_content.is_a?(String)
+  end
+
+  def a_path?(content_or_path)
+    return false if contain_null_byte?(content_or_path)
+
+    File.file?(content_or_path)
+  end
+
+  def contain_null_byte?(data)
+    null_byte = (+"\u0000").force_encoding("ASCII-8BIT")
+    data = (+data).force_encoding("ASCII-8BIT")
+
+    data.include?(null_byte)
   end
 end

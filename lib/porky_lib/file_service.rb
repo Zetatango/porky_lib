@@ -3,6 +3,8 @@
 require 'singleton'
 
 class PorkyLib::FileService
+  extend Gem::Deprecate
+
   include Singleton
   include PorkyLib::FileServiceHelper
 
@@ -56,9 +58,25 @@ class PorkyLib::FileService
 
   def write(file, bucket_name, key_id, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
-    raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if file_size_invalid?(file)
 
-    data = file_data(file)
+    if file?(file)
+      write_file(file, bucket_name, key_id, options)
+    else
+      write_data(file, bucket_name, key_id, options)
+    end
+  end
+  deprecate :write, 'write_file or write_data', 2020, 1
+
+  def write_file(file, bucket_name, key_id, options = {})
+    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
+
+    write_data(read_file(file), bucket_name, key_id, options)
+  end
+
+  def write_data(data, bucket_name, key_id, options = {})
+    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(data, bucket_name, key_id)
+    raise FileSizeTooLargeError, "Data size is larger than maximum allowed size of #{max_file_size}" if data_size_invalid?(data)
+
     file_key = generate_file_key(options)
     tempfile = encrypt_file_contents(data, key_id, file_key, options)
 
@@ -74,11 +92,12 @@ class PorkyLib::FileService
   end
 
   def overwrite_file(file, file_key, bucket_name, key_id, options = {})
-    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
+    raise FileServiceError, 'Invalid input. One or more input values is nil' if overwrite_input_invalid?(file, file_key, bucket_name, key_id)
     raise FileServiceError, 'Invalid input. file_key cannot be nil if overwriting an existing file' if file_key.nil?
-    raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if file_size_invalid?(file)
 
     data = file_data(file)
+    raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if data_size_invalid?(data)
+
     tempfile = encrypt_file_contents(data, key_id, file_key, options)
 
     begin
@@ -90,6 +109,7 @@ class PorkyLib::FileService
     # Remove tempfile from disk
     tempfile.unlink
   end
+  deprecate :overwrite_file, :none, 2020, 0o1
 
   def presigned_post_url(bucket_name, options = {})
     file_name = options[:file_name] || SecureRandom.uuid
@@ -158,7 +178,11 @@ class PorkyLib::FileService
     @s3_client ||= Aws::S3::Client.new
   end
 
-  def input_invalid?(file, bucket_name, key_id)
-    file.nil? || bucket_name.nil? || key_id.nil?
+  def input_invalid?(file_or_data, bucket_name, key_id)
+    file_or_data.nil? || bucket_name.nil? || key_id.nil?
+  end
+
+  def overwrite_input_invalid?(file_or_data, file_key, bucket_name, key_id)
+    file_or_data.nil? || file_key.nil? || bucket_name.nil? || key_id.nil?
   end
 end
