@@ -17,7 +17,7 @@ module PorkyLib::FileServiceHelper
   deprecate :file?, :none, 2020, 1
 
   def write_tempfile(file_contents, file_key)
-    tempfile = Tempfile.new(file_key)
+    tempfile = Tempfile.new(file_key, encoding: file_contents.encoding)
     tempfile << file_contents
     tempfile.close
 
