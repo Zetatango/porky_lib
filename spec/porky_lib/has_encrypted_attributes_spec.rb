@@ -29,5 +29,17 @@ RSpec.describe PorkyLib::HasEncryptedAttributes do
       user = create :user
       expect { user.generate_encryption_epoch }.not_to raise_error
     end
+
+    it 'raise a NoMethodError when the partition_guid attribute is changed' do
+      user = create :user
+      user.update(partition_guid: 1234)
+      expect(user.errors).to include(:partition_guid)
+    end
+
+    it 'raise a NoMethodError when the encryption_epoch attribute is changed' do
+      user = create :user
+      user.update(encryption_epoch: 1234)
+      expect(user.errors).to include(:encryption_epoch)
+    end
   end
 end
