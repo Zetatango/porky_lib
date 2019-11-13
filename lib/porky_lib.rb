@@ -15,4 +15,5 @@ module PorkyLib
   require 'porky_lib/unencrypted'
   require 'porky_lib/caching_encryptor'
   require 'porky_lib/concerns/has_encrypted_attributes'
+  require "porky_lib/railtie" if defined?(Rails) # for the rake tasks
 end
