@@ -47,7 +47,7 @@ GEM
     parser (2.6.5.0)
       ast (~> 2.4.0)
     rainbow (3.0.0)
-    rake (13.0.0)
+    rake (13.0.1)
     rbnacl (5.0.0)
       ffi
     rbnacl-libsodium (1.0.16)
