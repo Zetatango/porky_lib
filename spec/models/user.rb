@@ -5,7 +5,7 @@ class User < PorkyLib::ApplicationRecord
   include PorkyLib::PartitionProvider
   include PorkyLib::HasEncryptedAttributes
 
-  has_guid 'eam'
+  has_guid 'u'
 
   validates_with PorkyLib::StringValidator, fields: %i[guid]
 
