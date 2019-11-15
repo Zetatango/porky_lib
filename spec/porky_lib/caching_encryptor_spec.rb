@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe PorkyLib::CachingEncryptor do
-  let(:caching_encryptor) { described_class.new }
+  let(:caching_encryptor) { described_class }
   let(:expires_in) { 5.minutes }
   let(:cmk_key_id) { 'alias/zetatango' }
 
@@ -66,13 +66,13 @@ RSpec.describe PorkyLib::CachingEncryptor do
     encryption_params.each do |param|
       it "raises an InvalidParameterException when #{param} is nil" do
         expect do
-          caching_encryptor.encrypt(*generate_invalid_encrypt_params(param, nil))
+          caching_encryptor.zt_encrypt(*generate_invalid_encrypt_params(param, nil))
         end.to raise_exception(PorkyLib::CachingEncryptor::InvalidParameterException)
       end
 
       it "raises an InvalidParameterException when #{param} is empty" do
         expect do
-          caching_encryptor.encrypt(*generate_invalid_encrypt_params(param, ''))
+          caching_encryptor.zt_encrypt(*generate_invalid_encrypt_params(param, ''))
         end.to raise_exception(PorkyLib::CachingEncryptor::InvalidParameterException)
       end
     end
@@ -80,41 +80,41 @@ RSpec.describe PorkyLib::CachingEncryptor do
     it 'raises an EncryptionFailedException on KeyManagementService InvalidParameterException' do
       allow(PorkyLib::KeyManagementService).to receive(:new).and_raise(PorkyLib::KeyManagementService::InvalidParameterException)
 
-      expect { caching_encryptor.encrypt(*encryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::EncryptionFailedException)
+      expect { caching_encryptor.zt_encrypt(*encryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::EncryptionFailedException)
     end
 
     it 'raises an EncryptionFailedException on KeyManagementService KeyGenerationException' do
       allow(kms).to receive(:find_or_create_encryption_key).and_raise(PorkyLib::KeyManagementService::KeyGenerationException)
 
-      expect { caching_encryptor.encrypt(*encryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::EncryptionFailedException)
+      expect { caching_encryptor.zt_encrypt(*encryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::EncryptionFailedException)
     end
 
     it 'raises an EncryptionFailedException on KeyManagementService KeyCreateException' do
       allow(kms).to receive(:find_or_create_encryption_key).and_raise(PorkyLib::KeyManagementService::KeyCreateException)
 
-      expect { caching_encryptor.encrypt(*encryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::EncryptionFailedException)
+      expect { caching_encryptor.zt_encrypt(*encryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::EncryptionFailedException)
     end
 
     it 'raises an EncryptionFailedException on RbNaCl CryptoError' do
       allow(PorkyLib::Symmetric.instance).to receive(:encrypt_with_key).and_raise(RbNaCl::CryptoError)
 
-      expect { caching_encryptor.encrypt(*encryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::EncryptionFailedException)
+      expect { caching_encryptor.zt_encrypt(*encryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::EncryptionFailedException)
     end
 
     it 'raises an EncryptionFailedException on RbNaCl LengthError' do
       allow(PorkyLib::Symmetric.instance).to receive(:encrypt_with_key).and_raise(RbNaCl::LengthError)
 
-      expect { caching_encryptor.encrypt(*encryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::EncryptionFailedException)
+      expect { caching_encryptor.zt_encrypt(*encryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::EncryptionFailedException)
     end
 
     it 'returns a correct valid JSON struct' do
-      encryption_info = caching_encryptor.encrypt(*encryption_args)
+      encryption_info = caching_encryptor.zt_encrypt(*encryption_args)
 
       expect { JSON.parse(encryption_info) }.not_to raise_exception
     end
 
     it 'returns a correct JSON struct with the correct fields' do
-      encryption_info = JSON.parse(caching_encryptor.encrypt(*encryption_args), symbolize_names: true)
+      encryption_info = JSON.parse(caching_encryptor.zt_encrypt(*encryption_args), symbolize_names: true)
 
       expect(encryption_info).to have_key(:key_guid)
       expect(encryption_info).to have_key(:key)
@@ -123,7 +123,7 @@ RSpec.describe PorkyLib::CachingEncryptor do
     end
 
     it 'returns a correct JSON struct with the correct values' do
-      encryption_info = JSON.parse(caching_encryptor.encrypt(*encryption_args), symbolize_names: true)
+      encryption_info = JSON.parse(caching_encryptor.zt_encrypt(*encryption_args), symbolize_names: true)
 
       expect(encryption_info[:key_guid]).to eq(encryption_key.guid)
       expect(encryption_info[:key]).to eq(encryption_key.encrypted_data_encryption_key)
@@ -136,13 +136,13 @@ RSpec.describe PorkyLib::CachingEncryptor do
     decryption_params.each do |param|
       it "raises an InvalidParameterException when #{param} is nil" do
         expect do
-          caching_encryptor.decrypt(*generate_invalid_decrypt_params(param, nil))
+          caching_encryptor.zt_decrypt(*generate_invalid_decrypt_params(param, nil))
         end.to raise_exception(PorkyLib::CachingEncryptor::InvalidParameterException)
       end
 
       it "raises an InvalidParameterException when #{param} is empty" do
         expect do
-          caching_encryptor.decrypt(*generate_invalid_decrypt_params(param, ''))
+          caching_encryptor.zt_decrypt(*generate_invalid_decrypt_params(param, ''))
         end.to raise_exception(PorkyLib::CachingEncryptor::InvalidParameterException)
       end
     end
@@ -154,7 +154,7 @@ RSpec.describe PorkyLib::CachingEncryptor do
         cmk_key_id: cmk_key_id
       }]
 
-      expect { caching_encryptor.decrypt(*decryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::DecryptionFailedException)
+      expect { caching_encryptor.zt_decrypt(*decryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::DecryptionFailedException)
     end
 
     # rubocop:disable ExampleLength
@@ -170,7 +170,7 @@ RSpec.describe PorkyLib::CachingEncryptor do
         cmk_key_id: cmk_key_id
       }]
 
-      expect { caching_encryptor.decrypt(*decryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::DecryptionFailedException)
+      expect { caching_encryptor.zt_decrypt(*decryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::DecryptionFailedException)
     end
 
     it 'calls the legacy decrypt function when key_guid is not present' do
@@ -186,7 +186,7 @@ RSpec.describe PorkyLib::CachingEncryptor do
         cmk_key_id: cmk_key_id
       }]
 
-      caching_encryptor.decrypt(*decryption_args)
+      caching_encryptor.zt_decrypt(*decryption_args)
 
       expect(PorkyLib::Symmetric.instance).to have_received(:decrypt)
     end
@@ -195,29 +195,29 @@ RSpec.describe PorkyLib::CachingEncryptor do
     it 'raises a DecryptionFailedException on KeyManagementService InvalidParameterException' do
       allow(PorkyLib::KeyManagementService).to receive(:new).and_raise(PorkyLib::KeyManagementService::InvalidParameterException)
 
-      expect { caching_encryptor.decrypt(*decryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::DecryptionFailedException)
+      expect { caching_encryptor.zt_decrypt(*decryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::DecryptionFailedException)
     end
 
     it 'raises a DecryptionFailedException on KeyManagementService KeyRetrieveException' do
       allow(PorkyLib::KeyManagementService).to receive(:new).and_raise(PorkyLib::KeyManagementService::KeyRetrieveException)
 
-      expect { caching_encryptor.decrypt(*decryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::DecryptionFailedException)
+      expect { caching_encryptor.zt_decrypt(*decryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::DecryptionFailedException)
     end
 
     it 'raises a DecryptionFailedException on RbNaCl CryptoError' do
       allow(PorkyLib::Symmetric.instance).to receive(:decrypt_with_key).and_raise(RbNaCl::CryptoError)
 
-      expect { caching_encryptor.decrypt(*decryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::DecryptionFailedException)
+      expect { caching_encryptor.zt_decrypt(*decryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::DecryptionFailedException)
     end
 
     it 'raises a DecryptionFailedException on RbNaCl LengthError' do
       allow(PorkyLib::Symmetric.instance).to receive(:decrypt_with_key).and_raise(RbNaCl::LengthError)
 
-      expect { caching_encryptor.decrypt(*decryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::DecryptionFailedException)
+      expect { caching_encryptor.zt_decrypt(*decryption_args) }.to raise_exception(PorkyLib::CachingEncryptor::DecryptionFailedException)
     end
 
     it 'returns decrypted data' do
-      expect(caching_encryptor.decrypt(*decryption_args)).to eq(plaintext)
+      expect(caching_encryptor.zt_decrypt(*decryption_args)).to eq(plaintext)
     end
   end
 

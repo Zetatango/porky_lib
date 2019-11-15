@@ -10,7 +10,7 @@ class PorkyLib::CachingEncryptor
   class DecryptionFailedException < CachingEncryptorException; end
   class InvalidParameterException < CachingEncryptorException; end
 
-  def encrypt(*args, &_block)
+  def self.zt_encrypt(*args, &_block)
     data, partition_guid, encryption_epoch, expires_in, cmk_key_id = validate_encrypt_params(*args)
 
     kms = PorkyLib::KeyManagementService.new(partition_guid, expires_in, cmk_key_id)
@@ -41,7 +41,7 @@ class PorkyLib::CachingEncryptor
     raise EncryptionFailedException
   end
 
-  def decrypt(*args, &block)
+  def self.zt_decrypt(*args, &block)
     value, expires_in, cmk_key_id = validate_decrypt_params(*args)
 
     ciphertext_info = JSON.parse(value, symbolize_names: true)
@@ -78,9 +78,7 @@ class PorkyLib::CachingEncryptor
     raise DecryptionFailedException
   end
 
-  private
-
-  def legacy_decrypt(*args, &_block)
+  def self.legacy_decrypt(*args, &_block)
     ciphertext_data = JSON.parse(args.first[:value], symbolize_names: true)
     ciphertext_key = Base64.decode64(ciphertext_data[:key])
     ciphertext = Base64.decode64(ciphertext_data[:data])
@@ -88,8 +86,9 @@ class PorkyLib::CachingEncryptor
 
     PorkyLib::Symmetric.instance.decrypt(ciphertext_key, ciphertext, nonce).first
   end
+  private_class_method :legacy_decrypt
 
-  def validate_encrypt_params(*args)
+  def self.validate_encrypt_params(*args)
     data = args.first[:value]
     partition_guid = args.first[:partition_guid]
     encryption_epoch = args.first[:encryption_epoch]
@@ -100,8 +99,9 @@ class PorkyLib::CachingEncryptor
 
     [data, partition_guid, encryption_epoch, expires_in, cmk_key_id]
   end
+  private_class_method :validate_encrypt_params
 
-  def validate_decrypt_params(*args)
+  def self.validate_decrypt_params(*args)
     value = args.first[:value]
     expires_in = args.first[:expires_in]
     cmk_key_id = args.first[:cmk_key_id]
@@ -110,4 +110,5 @@ class PorkyLib::CachingEncryptor
 
     [value, expires_in, cmk_key_id]
   end
+  private_class_method :validate_decrypt_params
 end
