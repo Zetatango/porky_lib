@@ -10,7 +10,7 @@ AllCops:
     - output/**/*
     - vendor/**/*
     - spec/porky_lib/data/*
-  TargetRubyVersion: 2.3.7
+  TargetRubyVersion: 2.6.5
   RSpec:
     Patterns:
       - _spec.rb
@@ -18,8 +18,20 @@ AllCops:
     SpecTypes:
       Feature: 'spec/features/**/*'
 
-Documentation:
+Style/Documentation:
   Enabled: false
+
+Security/MarshalLoad:
+  Enabled: true
+
+Security/Eval:
+  Enabled: true
+
+Security/YAMLLoad:
+  Enabled: true
+
+Security/JSONLoad:
+  Enabled: true
 
 Metrics/LineLength:
   Max: 160
