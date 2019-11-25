@@ -341,31 +341,6 @@ RSpec.describe PorkyLib::FileService, type: :request do
   end
 
   describe '#overwrite' do
-    it 'overwrites the right content to S3 if file object is used' do
-      file = write_test_file(plaintext_data)
-
-      expect do
-        file_service.overwrite_file(file, default_file_key, bucket_name, default_key_id)
-      end.not_to raise_exception
-    end
-
-    it 'overwrites the right content to S3 if path is used' do
-      path = write_test_file(plaintext_data).path
-
-      expect do
-        file_service.overwrite_file(path, default_file_key, bucket_name, default_key_id)
-      end.not_to raise_exception
-    end
-
-    it 'overwrites FileServiceError when file cannot be read (no permission)' do
-      path = write_test_file(plaintext_data).path
-
-      expect do
-        File.chmod(0o000, path)
-        file_service.overwrite_file(path, default_file_key, bucket_name, default_key_id)
-      end.to raise_exception(PorkyLib::FileServiceHelper::FileServiceError)
-    end
-
     it 'overwrites encrypted data to S3' do
       expect do
         file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id)
