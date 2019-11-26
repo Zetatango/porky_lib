@@ -11,15 +11,6 @@ module PorkyLib::FileServiceHelper
     data.bytesize > max_size
   end
 
-  def file_data(file_or_content)
-    if file?(file_or_content)
-      read_file(file_or_content)
-    else
-      file_or_content
-    end
-  end
-  deprecate :file_data, :none, 2020, 1
-
   def file?(file_or_content)
     a_file?(file_or_content) || a_path?(file_or_content)
   end

@@ -91,11 +91,10 @@ class PorkyLib::FileService
     file_key
   end
 
-  def overwrite_file(file, file_key, bucket_name, key_id, options = {})
-    raise FileServiceError, 'Invalid input. One or more input values is nil' if overwrite_input_invalid?(file, file_key, bucket_name, key_id)
+  def overwrite_file(data, file_key, bucket_name, key_id, options = {})
+    raise FileServiceError, 'Invalid input. One or more input values is nil' if overwrite_input_invalid?(data, file_key, bucket_name, key_id)
     raise FileServiceError, 'Invalid input. file_key cannot be nil if overwriting an existing file' if file_key.nil?
 
-    data = file_data(file)
     raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if data_size_invalid?(data)
 
     tempfile = encrypt_file_contents(data, key_id, file_key, options)
@@ -109,7 +108,6 @@ class PorkyLib::FileService
     # Remove tempfile from disk
     tempfile.unlink
   end
-  deprecate :overwrite_file, :none, 2020, 0o1
 
   def presigned_post_url(bucket_name, options = {})
     file_name = options[:file_name] || SecureRandom.uuid
