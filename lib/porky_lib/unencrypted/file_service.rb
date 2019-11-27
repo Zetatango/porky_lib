@@ -47,7 +47,11 @@ class PorkyLib::Unencrypted::FileService
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(data, bucket_name)
     raise FileSizeTooLargeError, "Data size is larger than maximum allowed size of #{max_file_size}" if data_size_invalid?(data)
 
-    file_key = generate_file_key(options)
+    file_key = if options.key?(:file_name)
+                 options[:file_name]
+               else
+                 generate_file_key(options)
+               end
     tempfile = write_tempfile(data, file_key)
 
     begin

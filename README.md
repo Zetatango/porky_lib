@@ -160,7 +160,7 @@ file_data = PorkyLib::Unencrypted::FileService.read(bucket_name, file_key)
 # Where file is the data to encrypt and upload to S3 (can be a path or raw data or ruby file object)
 # bucket_name is the name of the S3 bucket to write to
 # key_id is the ID of the CMK to use to generate a data encryption key to encrypt the file data
-# options is an optional parameter for specifying optional metadata about the file
+# options is an optional parameter for specifying optional metadata about the file and the storage_class of the object
 file_key = PorkyLib::FileService.write(file, bucket_name, key_id, options)
 ```
 
@@ -169,7 +169,7 @@ file_key = PorkyLib::FileService.write(file, bucket_name, key_id, options)
 # Where file is the data to encrypt and upload to S3 (can be a path or ruby file object)
 # bucket_name is the name of the S3 bucket to write to
 # key_id is the ID of the CMK to use to generate a data encryption key to encrypt the file data
-# options is an optional parameter for specifying optional metadata about the file
+# options is an optional parameter for specifying optional metadata about the file and the storage_class of the object
 file_key = PorkyLib::FileService.write_file(file, bucket_name, key_id, options)
 ```
 
@@ -178,7 +178,7 @@ file_key = PorkyLib::FileService.write_file(file, bucket_name, key_id, options)
 # Where data is the raw data to encrypt and upload to S3
 # bucket_name is the name of the S3 bucket to write to
 # key_id is the ID of the CMK to use to generate a data encryption key to encrypt the file data
-# options is an optional parameter for specifying optional metadata about the file
+# options is an optional parameter for specifying optional metadata about the file and the storage_class of the object
 file_key = PorkyLib::FileService.write_data(data, bucket_name, key_id, options)
 ```
 
@@ -187,7 +187,7 @@ file_key = PorkyLib::FileService.write_data(data, bucket_name, key_id, options)
 # --- DEPRECATED --- Please use write_data or write_file instead of write
 # Where file is the data to upload to S3 (can be a path or raw data or ruby file object)
 # bucket_name is the name of the S3 bucket to write to
-# options is an optional parameter for specifying optional metadata about the file
+# options is an optional parameter for specifying optional metadata about the file and the storage_class of the object
 file_key = PorkyLib::Unencrypted::FileService.write(file, bucket_name, options)
 ```
 
@@ -195,7 +195,7 @@ file_key = PorkyLib::Unencrypted::FileService.write(file, bucket_name, options)
 ```ruby
 # Where file is the data to encrypt and upload to S3 (can be a path or ruby file object)
 # bucket_name is the name of the S3 bucket to write to
-# options is an optional parameter for specifying optional metadata about the file
+# options is an optional parameter for specifying optional metadata about the file and the storage_class of the object
 file_key = PorkyLib::Unencrypted::FileService.write_file(file, bucket_name, options)
 ```
 
@@ -203,7 +203,7 @@ file_key = PorkyLib::Unencrypted::FileService.write_file(file, bucket_name, opti
 ```ruby
 # Where data is the raw data to encrypt and upload to S3
 # bucket_name is the name of the S3 bucket to write to
-# options is an optional parameter for specifying optional metadata about the file
+# options is an optional parameter for specifying optional metadata about the file and the storage_class of the object
 file_key = PorkyLib::Unencrypted::FileService.write_data(data, bucket_name, options)
 ```
 
@@ -223,6 +223,45 @@ To generate a new presigned GET url (used to download files directly from AWS S3
 # file_key is the file identifier of the file/data that was written to S3.
 url = PorkyLib::Symmetric.instance.presigned_get_url(bucket_name, file_key)
 ```
+
+## Rake task
+If you want to write or read an encrypted file from the command line, there is a Rake write and read task.
+
+> Note: the environment variables can be set globally or by prepending the rake task command
+
+### Write file
+
+Rake task name: `file:write`
+
+Environment variables:
+* Required
+  * `FILE_PATH` - Absolute or relative file path 
+  * `CMK_KEY_ID` - Alias of the CMK key
+  * `AWS_S3_BUCKET` - AWS S3 bucket name
+  * `AWS_REGION` - AWS region name
+  * `AWS_ACCESS_KEY_ID` - AWS access key ID (credentials)
+  * `AWS_ACCESS_KEY` - AWS secret access key (credentials)
+* Optional
+  * `AWS_S3_MOCK_CLIENT` - PorkyLib's AWS KMS mock client (defaults to `true`)
+  * `AWS_S3_MAX_FILE_SIZE` - Max file size (defaults to `1MB`)
+  * `AWS_S3_STORAGE_CLASS` - One of STANDARD, REDUCED_REDUNDANCY, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, GLACIER, DEEP_ARCHIVE (defaults to `STANDARD`)
+  * `AWS_S3_KEEP_FILE_NAME` - Saves the file in AWS S3 with the original file name (defaults to `true`)
+  
+### Read file
+
+Rake task name: `file:read`
+
+Environment variables:
+* Required
+  * `FILE_KEY` - AWS S3 object file key
+  * `AWS_S3_BUCKET` - AWS S3 bucket name
+  * `AWS_REGION` - AWS region name
+  * `AWS_ACCESS_KEY_ID` - AWS access key ID (credentials)
+  * `AWS_ACCESS_KEY` - AWS secret access key (credentials)
+* Optional
+  * `AWS_S3_MOCK_CLIENT` - PorkyLib's AWS KMS mock client (defaults to `true`)
+  * `AWS_S3_MAX_FILE_SIZE` - Max file size (defaults to `1MB`)
+  * `DESTINATION` - Location to save the file (defaults to `FILE_KEY`)
 
 ## Development
 

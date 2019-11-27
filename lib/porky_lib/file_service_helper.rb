@@ -36,11 +36,13 @@ module PorkyLib::FileServiceHelper
 
   def perform_upload(bucket_name, file_key, tempfile, options)
     obj = s3.bucket(bucket_name).object(file_key)
-    if options.key?(:metadata)
-      obj.upload_file(tempfile.path, metadata: options[:metadata])
-    else
-      obj.upload_file(tempfile.path)
-    end
+
+    upload_options = {
+      metadata: (options[:metadata] if options.key?(:metadata)),
+      storage_class: (options[:storage_class] if options.key?(:storage_class))
+    }.compact
+
+    obj.upload_file(tempfile.path, upload_options)
   end
 
   def s3
