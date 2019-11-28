@@ -2,12 +2,14 @@
 
 if ENV['COVERAGE'] || ENV['CI']
   require 'simplecov'
+  require 'codacy-coverage'
   require 'codecov'
 
   SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
     [
       SimpleCov::Formatter::Codecov,
-      SimpleCov::Formatter::HTMLFormatter
+      SimpleCov::Formatter::HTMLFormatter,
+      Codacy::Formatter
     ]
   )
 

@@ -25,6 +25,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'bundler-audit'
   spec.add_development_dependency 'byebug'
+  spec.add_development_dependency 'codacy-coverage'
   spec.add_development_dependency 'codecov'
   spec.add_development_dependency 'msgpack'
   spec.add_development_dependency 'rake'
