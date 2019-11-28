@@ -258,6 +258,18 @@ RSpec.describe PorkyLib::FileService, type: :request do
       expect(file_key).not_to be_nil
     end
 
+    it 'writes plaintext data to S3 with a different storage_class' do
+      storage_class = 'REDUCED_REDUNDANCY'
+      file_key = file_service.write_data(plaintext_data, bucket_name, storage_class: storage_class)
+      expect(file_key).not_to be_nil
+    end
+
+    it 'writes encrypted data to S3 with a custom file name' do
+      custom_file_name = 'custom_file_name'
+      file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id, file_name: custom_file_name)
+      expect(file_key).to eq(custom_file_name)
+    end
+
     it 'writes encrypted data to S3 with directory' do
       file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id, directory: '/directory1/dirA')
       expect(file_key).not_to be_nil
