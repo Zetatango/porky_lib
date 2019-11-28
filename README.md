@@ -227,7 +227,7 @@ url = PorkyLib::Symmetric.instance.presigned_get_url(bucket_name, file_key)
 ## Rake task
 If you want to write or read an encrypted file from the command line, there is a Rake write and read task.
 
-> Note: the environment variables can be set globally or by prepending the rake task command
+> Note: the environment variables can be set globally or by prepending them to the rake task command
 
 ### Write file
 

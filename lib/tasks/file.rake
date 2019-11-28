@@ -3,7 +3,7 @@
 require 'porky_lib'
 
 namespace :file do
-  desc "Read a file to AWS S3"
+  desc "Read a file from AWS S3"
   task :read do
     # Optional arguments
     use_mock_client = ENV.fetch('AWS_S3_MOCK_CLIENT', 'true') == 'true'
