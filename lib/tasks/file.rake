@@ -33,7 +33,7 @@ namespace :file do
   end
 
   desc "Write a file to AWS S3"
-  task :file do
+  task :write do
     # Optional arguments
     use_mock_client = ENV.fetch('AWS_S3_MOCK_CLIENT', 'true') == 'true'
     max_file_size = ENV.fetch('AWS_S3_MAX_FILE_SIZE', 1_048_576).to_i
