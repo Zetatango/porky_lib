@@ -17,23 +17,21 @@ module PorkyLib::PartitionProvider
         def provider_encryption_epoch
           provider_info(:provider_encryption_epoch)
         end
-
-        private
-
-        def provider_info(record_attribute)
-          raise ActiveRecord::RecordInvalid if partition_provider_attribute.nil?
-
-          record = send(partition_provider_attribute)
-
-          raise ActiveRecord::RecordInvalid unless record.present? && record.is_a?(PorkyLib::PartitionProvider)
-
-          info = record.send(record_attribute)
-
-          raise ActiveRecord::RecordInvalid if info.nil?
-
-          info
-        end
       end
     end
+  end
+
+  def provider_info(record_attribute)
+    raise ActiveRecord::RecordInvalid if partition_provider_attribute.nil?
+
+    record = send(partition_provider_attribute)
+
+    raise ActiveRecord::RecordInvalid unless record.present? && record.is_a?(PorkyLib::PartitionProvider)
+
+    info = record.send(record_attribute)
+
+    raise ActiveRecord::RecordInvalid if info.nil?
+
+    info
   end
 end
