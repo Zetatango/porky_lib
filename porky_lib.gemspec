@@ -42,13 +42,13 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop-rspec'
   spec.add_development_dependency 'rubocop_runner'
   spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency "sqlite3"
+  spec.add_development_dependency 'sqlite3'
   spec.add_development_dependency 'timecop'
 
   spec.add_dependency 'aws-sdk-kms'
   spec.add_dependency 'aws-sdk-s3'
   spec.add_dependency 'msgpack'
-  spec.add_dependency 'rails', '~>5.2.3'
+  spec.add_dependency 'rails', '~>5.2.4'
   spec.add_dependency 'rbnacl', '=5.0.0'
   spec.add_dependency 'rbnacl-libsodium'
   spec.add_dependency 'redis'
