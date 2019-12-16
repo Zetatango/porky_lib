@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
+  spec.add_development_dependency 'attr_encrypted'
   spec.add_development_dependency 'aws-sdk-kms'
   spec.add_development_dependency 'aws-sdk-s3'
   spec.add_development_dependency 'bundler'

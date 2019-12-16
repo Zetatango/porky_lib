@@ -27,8 +27,9 @@ require 'rails'
 require 'active_record'
 require 'active_support/all'
 require 'factories/encryption_key'
-require 'factories/profile'
-require 'factories/user'
+require 'factories/child'
+require 'factories/proxy'
+require 'factories/partition_provider'
 require 'redis'
 
 # setup temporary database for testing

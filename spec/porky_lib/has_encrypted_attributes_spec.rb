@@ -21,25 +21,25 @@ RSpec.describe PorkyLib::HasEncryptedAttributes do
 
   describe 'when a subclass does implement the HasEncryptedAttributes abstract methods' do
     it 'does not raise a NoMethodError when generate_partition_guid is implemented' do
-      user = create :user
-      expect { user.generate_partition_guid }.not_to raise_error
+      partition_provider = create :partition_provider
+      expect { partition_provider.generate_partition_guid }.not_to raise_error
     end
 
     it 'does not raise a NoMethodError when generate_encryption_epoch is implemented' do
-      user = create :user
-      expect { user.generate_encryption_epoch }.not_to raise_error
+      partition_provider = create :partition_provider
+      expect { partition_provider.generate_encryption_epoch }.not_to raise_error
     end
 
     it 'raise a NoMethodError when the partition_guid attribute is changed' do
-      user = create :user
-      user.update(partition_guid: 1234)
-      expect(user.errors).to include(:partition_guid)
+      partition_provider = create :partition_provider
+      partition_provider.update(partition_guid: 1234)
+      expect(partition_provider.errors).to include(:partition_guid)
     end
 
     it 'raise a NoMethodError when the encryption_epoch attribute is changed' do
-      user = create :user
-      user.update(encryption_epoch: 1234)
-      expect(user.errors).to include(:encryption_epoch)
+      partition_provider = create :partition_provider
+      partition_provider.update(encryption_epoch: 1234)
+      expect(partition_provider.errors).to include(:encryption_epoch)
     end
   end
 end
