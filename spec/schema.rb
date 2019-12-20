@@ -17,8 +17,6 @@ ActiveRecord::Schema.define do
 
   create_table "partition_providers", force: :cascade do |t|
     t.string "guid", null: false
-    t.string "partition_guid", null: false
-    t.datetime "encryption_epoch", null: false
     t.index ["guid"], name: "index_partition_providers_on_guid", unique: true
   end
 
@@ -34,12 +32,11 @@ ActiveRecord::Schema.define do
   end
 
   create_table "proxies", force: :cascade do |t|
-    t.bigint "partition_provider_id"
     t.string "guid"
     t.string "value"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "partition_provider_guid", null: false
     t.index ["guid"], name: "index_proxies_on_guid", unique: true
-    t.index ["partition_provider_id"], name: "index_proxies_on_partition_provider_id"
   end
 end

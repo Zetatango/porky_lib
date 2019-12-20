@@ -8,7 +8,7 @@ class Child < PorkyLib::ApplicationRecord
   include PorkyLib::HasEncryptedAttributes
   include PorkyLib::HasGuid
 
-  partition_provider :child
+  partition_provider :proxy
 
   belongs_to :proxy, required: true
 
@@ -17,12 +17,8 @@ class Child < PorkyLib::ApplicationRecord
                          encryption_epoch: proc { |object| object.generate_encryption_epoch }, cmk_key_id: 'alias/zetatango',
                          expires_in: 5.minutes
 
-  has_guid 'p'
+  has_guid 'c'
   validates_with PorkyLib::StringValidator, fields: %i[guid]
-
-  def child
-    proxy.partition_provider
-  end
 
   def generate_partition_guid
     return partition_guid if partition_guid.present?

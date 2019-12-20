@@ -4,9 +4,10 @@ require './spec/models/partition_provider'
 
 class Proxy < PorkyLib::ApplicationRecord
   include PorkyLib::HasGuid
+  include PorkyLib::PartitionProvider
 
-  belongs_to :partition_provider, required: true
+  partition_provider_guid :partition_provider_guid, PartitionProvider
 
-  has_guid 'up'
+  has_guid 'p'
   validates_with PorkyLib::StringValidator, fields: %i[guid]
 end

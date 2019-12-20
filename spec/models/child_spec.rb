@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Child, type: :model do
   let(:partition_provider) { create :partition_provider }
-  let(:proxy) { create :proxy, partition_provider: partition_provider }
+  let(:proxy) { create :proxy, partition_provider_guid: partition_provider.guid }
   let(:child) { create :child, proxy: proxy }
 
   it 'requires a proxy' do
@@ -27,19 +27,21 @@ RSpec.describe Child, type: :model do
     expect(child.encrypted_attributes.keys).to include(:value)
   end
 
+  it 'has a partition_guid' do
+    expect(child).to respond_to(:partition_guid)
+  end
+
+  it 'has a encryption_epoch' do
+    expect(child).to respond_to(:encryption_epoch)
+  end
+
   describe '#provider_partition_guid' do
     it 'returns the partition_provider partition guid as the provider partition guid' do
-      expect(child.provider_partition_guid).to eq(partition_provider.partition_guid)
+      expect(child.provider_partition_guid).to eq(partition_provider.guid)
     end
 
     it 'raises an exception when proxy is nil' do
       child = build :child, proxy: nil
-
-      expect { child.provider_partition_guid }.to raise_exception(NoMethodError)
-    end
-
-    it 'raises an exception when proxy partition_guid is nil' do
-      child = build :child, proxy: build(:proxy, partition_provider: build(:partition_provider, partition_guid: nil))
 
       expect { child.provider_partition_guid }.to raise_exception(ActiveRecord::RecordInvalid)
     end
@@ -47,17 +49,11 @@ RSpec.describe Child, type: :model do
 
   describe '#provider_encryption_epoch' do
     it 'returns the partition_provider encryption epoch as the provider encryption guid' do
-      expect(child.provider_encryption_epoch).to eq(partition_provider.encryption_epoch)
+      expect(child.provider_encryption_epoch).to eq(PorkyLib::KeyManagementService.encryption_key_epoch(Time.now))
     end
 
     it 'raises an exception when proxy is nil' do
       child = build :child, proxy: nil
-
-      expect { child.provider_encryption_epoch }.to raise_exception(NoMethodError)
-    end
-
-    it 'raises an exception when proxy encryption_epoch is nil' do
-      child = build :child, proxy: build(:proxy, partition_provider: build(:partition_provider, encryption_epoch: nil))
 
       expect { child.provider_encryption_epoch }.to raise_exception(ActiveRecord::RecordInvalid)
     end

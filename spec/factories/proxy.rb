@@ -5,6 +5,6 @@ require './spec/models/proxy'
 
 FactoryBot.define do
   factory :proxy, class: 'Proxy' do
-    association :partition_provider
+    partition_provider_guid { 'mfgklasdmf' }
   end
 end
