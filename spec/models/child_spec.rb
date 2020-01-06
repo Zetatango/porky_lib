@@ -31,7 +31,7 @@ RSpec.describe Child, type: :model do
     expect(child).to respond_to(:partition_guid)
   end
 
-  it 'has a encryption_epoch' do
+  it 'has an encryption_epoch' do
     expect(child).to respond_to(:encryption_epoch)
   end
 
