@@ -20,7 +20,7 @@ And then execute:
 Or install it yourself as:
 
     $ gem install porky_lib
-    
+
 Inside of your Ruby program do:
 
 ```ruby
@@ -86,7 +86,7 @@ To encrypt data with a known plaintext key:
 # plaintext_key is the encryption key to use
 # encryption_info is the structure returned that contains:
 #   ciphertext: plaintext encrypted under plaintext_key
-#   nonce: The generated nonce 
+#   nonce: The generated nonce
 encryption_info = PorkyLib::Symmetric.instance.encrypt_with_key(plaintext, plaintext_key)
 ```
 
@@ -104,7 +104,7 @@ To decrypt data with a known plaintext key:
 ```ruby
 # Where ciphertext is the encrypted data to be decrypted
 # plaintext_key is the decryption key to use
-# nonce is the nonce to use 
+# nonce is the nonce to use
 # decryption_info is the structured returned that contains:
 #   plaintext: ciphertext decrypted under plaintext_key
 decryption_info = PorkyLib::Symmetric.instance.decrypt_with_key(ciphertext, plaintext_key, nonce)
@@ -137,7 +137,7 @@ plaintext_key.replace(PorkyLib::Symmetric.instance.secure_delete_plaintext_key(p
 To verify whether an alias exists or not:
 ```ruby
 # Where key_alias is the alias name to verify
-alias_exists = PorkyLib::Symmetric.instance.cmk_alias_exists?(key_alias) 
+alias_exists = PorkyLib::Symmetric.instance.cmk_alias_exists?(key_alias)
 ```
 
 ### To Read From AWS S3
@@ -235,7 +235,7 @@ Rake task name: `file:write`
 
 Environment variables:
 * Required
-  * `FILE_PATH` - Absolute or relative file path 
+  * `FILE_PATH` - Absolute or relative file path
   * `CMK_KEY_ID` - Alias of the CMK key
   * `AWS_S3_BUCKET` - AWS S3 bucket name
   * `AWS_REGION` - AWS region name
@@ -246,7 +246,7 @@ Environment variables:
   * `AWS_S3_MAX_FILE_SIZE` - Max file size (defaults to `1MB`)
   * `AWS_S3_STORAGE_CLASS` - One of STANDARD, REDUCED_REDUNDANCY, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, GLACIER, DEEP_ARCHIVE (defaults to `STANDARD`)
   * `AWS_S3_KEEP_FILE_NAME` - Saves the file in AWS S3 with the original file name (defaults to `true`)
-  
+
 ### Read file
 
 Rake task name: `file:read`
@@ -268,6 +268,33 @@ Environment variables:
 Development on this project should occur on separate feature branches and pull requests should be submitted. When submitting a
 pull request, the pull request comment template should be filled out as much as possible to ensure a quick review and increase
 the likelihood of the pull request being accepted.
+
+### Ruby
+
+This application requires:
+
+* Ruby version: 2.7.0
+
+If you do not have Ruby installed, it is recommended you use ruby-install and chruby to manage Ruby versions.
+
+```
+brew install ruby-install chruby
+ruby-install ruby 2.7.0
+```
+
+Add the following lines to ~/.bash_profile:
+
+```
+source /usr/local/opt/chruby/share/chruby/chruby.sh
+source /usr/local/opt/chruby/share/chruby/auto.sh
+```
+
+Set Ruby version to 2.7.0:
+
+```
+source ~/.bash_profile
+chruby 2.7.0
+```
 
 ### Running Tests
 
