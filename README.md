@@ -273,25 +273,25 @@ the likelihood of the pull request being accepted.
 
 This application requires:
 
-* Ruby version: 2.7.0
+*   Ruby version: 2.7.0
 
 If you do not have Ruby installed, it is recommended you use ruby-install and chruby to manage Ruby versions.
 
-```
+```bash
 brew install ruby-install chruby
 ruby-install ruby 2.7.0
 ```
 
 Add the following lines to ~/.bash_profile:
 
-```
+```bash
 source /usr/local/opt/chruby/share/chruby/chruby.sh
 source /usr/local/opt/chruby/share/chruby/auto.sh
 ```
 
 Set Ruby version to 2.7.0:
 
-```
+```bash
 source ~/.bash_profile
 chruby 2.7.0
 ```
