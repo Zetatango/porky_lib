@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'codecov'
   spec.add_development_dependency 'msgpack'
   spec.add_development_dependency 'rake'
-  spec.add_development_dependency 'rbnacl', '=5.0.0'
+  spec.add_development_dependency 'rbnacl', '=7.1.1'
   spec.add_development_dependency 'rbnacl-libsodium'
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'rspec-collection_matchers'
@@ -45,6 +45,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'aws-sdk-kms'
   spec.add_dependency 'aws-sdk-s3'
   spec.add_dependency 'msgpack'
-  spec.add_dependency 'rbnacl', '=5.0.0'
+  spec.add_dependency 'rbnacl', '=7.1.1'
   spec.add_dependency 'rbnacl-libsodium'
 end

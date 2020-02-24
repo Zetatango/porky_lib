@@ -5,7 +5,7 @@ PATH
       aws-sdk-kms
       aws-sdk-s3
       msgpack
-      rbnacl (= 5.0.0)
+      rbnacl (= 7.1.1)
       rbnacl-libsodium
 
 GEM
@@ -50,7 +50,7 @@ GEM
       ast (~> 2.4.0)
     rainbow (3.0.0)
     rake (13.0.1)
-    rbnacl (5.0.0)
+    rbnacl (7.1.1)
       ffi
     rbnacl-libsodium (1.0.16)
       rbnacl (>= 3.0.1)
@@ -109,7 +109,7 @@ DEPENDENCIES
   msgpack
   porky_lib!
   rake
-  rbnacl (= 5.0.0)
+  rbnacl (= 7.1.1)
   rbnacl-libsodium
   rspec
   rspec-collection_matchers
