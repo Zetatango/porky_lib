@@ -33,7 +33,7 @@ Security/YAMLLoad:
 Security/JSONLoad:
   Enabled: true
 
-Metrics/LineLength:
+Layout/LineLength:
   Max: 160
 
 Metrics/ClassLength:
@@ -59,3 +59,12 @@ RSpec/MultipleExpectations:
 
 RSpec/ExampleLength:
   Max: 10
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
