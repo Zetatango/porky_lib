@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    porky_lib (0.10.0)
+    porky_lib (0.10.1)
       aws-sdk-kms
       aws-sdk-s3
       msgpack
@@ -123,7 +123,7 @@ DEPENDENCIES
   timecop
 
 RUBY VERSION
-   ruby 2.7.0p0
+   ruby 2.7.1p83
 
 BUNDLED WITH
    2.1.4
