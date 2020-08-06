@@ -38,7 +38,7 @@ class PorkyLib::Config
   end
 
   def self.logger
-    @logger ||= defined?(Rails) ? Rails.logger : Logger.new(STDOUT)
+    @logger ||= defined?(Rails) ? Rails.logger : Logger.new($stdout)
     @logger
   end
 

@@ -17,6 +17,7 @@ class PorkyLib::Symmetric
     @client ||= Aws::KMS::Client.new
   end
 
+  # rubocop:disable Style/OptionalBooleanParameter
   def create_key(tags, key_alias = nil, key_rotation_enabled = true)
     resp = client.create_key(key_usage: CMK_KEY_USAGE, origin: CMK_KEY_ORIGIN, tags: tags)
     key_id = resp.to_h[:key_metadata][:key_id]
@@ -29,6 +30,7 @@ class PorkyLib::Symmetric
 
     key_id
   end
+  # rubocop:enable Style/OptionalBooleanParameter
 
   def cmk_alias_exists?(key_alias)
     alias_list = client.list_aliases.to_h[:aliases]
