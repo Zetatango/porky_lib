@@ -64,7 +64,7 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     tempfile
   end
 
-  def test_file_content(expected_content, binary = false)
+  def test_file_content(expected_content, binary: false)
     allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
     allow(aws_s3_object).to receive(:upload_file)
 
@@ -123,13 +123,13 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     end
 
     it 'handles contents containing a null byte when reading a file and writes the right content' do
-      test_file_content(null_byte_contents, true) do
+      test_file_content(null_byte_contents, binary: true) do
         file_service.write(null_byte_contents, bucket_name)
       end
     end
 
     it 'handles content encoded as ASCII_8BIT (BINARY) when creating the tempfile and writes the right content' do
-      test_file_content(binary_contents, true) do
+      test_file_content(binary_contents, binary: true) do
         file_service.write(binary_contents, bucket_name)
       end
     end
@@ -279,13 +279,13 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     end
 
     it 'handles contents containing a null byte when reading a file and writes the right content' do
-      test_file_content(null_byte_contents, true) do
+      test_file_content(null_byte_contents, binary: true) do
         file_service.write_data(null_byte_contents, bucket_name)
       end
     end
 
     it 'handles content encoded as ASCII_8BIT (BINARY) when creating the tempfile and writes the right content' do
-      test_file_content(binary_contents, true) do
+      test_file_content(binary_contents, binary: true) do
         file_service.write_data(binary_contents, bucket_name)
       end
     end
