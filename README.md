@@ -273,9 +273,9 @@ the likelihood of the pull request being accepted.
 
 This application requires:
 
-*   Ruby version: 2.7.1
+*   Ruby version: 2.7.2
 
-Ruby 2.7.1 and greater requires OpenSSL 1.1+. To link to Homebrew's upgraded version of OpenSSL, add the following to your bash profile
+Ruby 2.7.2 and greater requires OpenSSL 1.1+. To link to Homebrew's upgraded version of OpenSSL, add the following to your bash profile
 
 ```shell script
 export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
@@ -285,7 +285,7 @@ If you do not have Ruby installed, it is recommended you use ruby-install and ch
 
 ```bash
 brew install ruby-install chruby
-ruby-install ruby 2.7.1
+ruby-install ruby 2.7.2
 ```
 
 Add the following lines to ~/.bash_profile:
@@ -295,11 +295,11 @@ source /usr/local/opt/chruby/share/chruby/chruby.sh
 source /usr/local/opt/chruby/share/chruby/auto.sh
 ```
 
-Set Ruby version to 2.7.1:
+Set Ruby version to 2.7.2:
 
 ```bash
 source ~/.bash_profile
-chruby 2.7.1
+chruby 2.7.2
 ```
 
 ### Running Tests
