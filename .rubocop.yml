@@ -3,6 +3,7 @@ require:
   - rubocop-performance
 
 AllCops:
+  NewCops: enable
   Exclude:
     - bin/*
     - db/**/*.rb
@@ -59,6 +60,9 @@ RSpec/MultipleExpectations:
 
 RSpec/ExampleLength:
   Max: 10
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
 
 Style/HashEachMethods:
   Enabled: true
