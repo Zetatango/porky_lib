@@ -82,6 +82,9 @@ Lint/StructNewOverride:
 Layout/SpaceAroundMethodCallOperator:
   Enabled: true
 
+Layout/EmptyLineBetweenDefs:
+  Enabled: false
+
 Style/ExponentialNotation:
   Enabled: true
 

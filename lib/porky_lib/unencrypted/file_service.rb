@@ -9,7 +9,6 @@ class PorkyLib::Unencrypted::FileService
   include PorkyLib::FileServiceHelper
 
   class FileServiceError < StandardError; end
-
   class FileSizeTooLargeError < StandardError; end
 
   def read(bucket_name, file_key, options = {})
