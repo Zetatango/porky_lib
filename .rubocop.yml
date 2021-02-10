@@ -3,6 +3,7 @@ require:
   - rubocop-performance
 
 AllCops:
+  NewCops: enable
   Exclude:
     - bin/*
     - db/**/*.rb
@@ -60,6 +61,9 @@ RSpec/MultipleExpectations:
 RSpec/ExampleLength:
   Max: 10
 
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
 Style/HashEachMethods:
   Enabled: true
 
@@ -77,6 +81,9 @@ Lint/StructNewOverride:
 
 Layout/SpaceAroundMethodCallOperator:
   Enabled: true
+
+Layout/EmptyLineBetweenDefs:
+  Enabled: false
 
 Style/ExponentialNotation:
   Enabled: true
