@@ -1,10 +1,4 @@
 version: 2
-registries:
-  rubygems-server-gems-rapidrailsthemes-com-gems:
-    type: rubygems-server
-    url: https://gems.rapidrailsthemes.com/gems
-    username: "${{secrets.RUBYGEMS_SERVER_GEMS_RAPIDRAILSTHEMES_COM_GEMS_USERNAME}}"
-    password: "${{secrets.RUBYGEMS_SERVER_GEMS_RAPIDRAILSTHEMES_COM_GEMS_PASSWORD}}"
 
 updates:
 - package-ecosystem: bundler
@@ -50,5 +44,3 @@ updates:
   - dependency-name: msgpack
     versions:
     - 1.4.1
-  registries:
-  - rubygems-server-gems-rapidrailsthemes-com-gems
