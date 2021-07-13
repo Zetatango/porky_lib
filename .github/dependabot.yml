@@ -9,8 +9,10 @@ updates:
   reviewers:
   - michellefoy
   - weiyunlu
+  - nareshchinniTC
   assignees:
   - michellefoy
+  - nareshchinniTC
   ignore:
   - dependency-name: aws-sdk-s3
     versions:
