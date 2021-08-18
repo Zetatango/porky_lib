@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'aws-sdk-kms'
-require 'rbnacl/libsodium'
+require 'rbnacl'
 require 'singleton'
 require 'benchmark'
 
