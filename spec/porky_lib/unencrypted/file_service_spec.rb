@@ -254,7 +254,7 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
       end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
     end
 
-    it 'raises FileServiceError when writing to bucket without permission ' do
+    it 'raises FileServiceError when writing to bucket without permission' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
         stub_responses: {
@@ -326,7 +326,7 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
       end.to raise_exception(PorkyLib::Unencrypted::FileService::FileSizeTooLargeError)
     end
 
-    it 'raises FileServiceError when reading bucket without permission ' do
+    it 'raises FileServiceError when reading bucket without permission' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
         stub_responses: {
@@ -338,7 +338,7 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
       end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
     end
 
-    it 'raises FileServiceError when bucket does not exist ' do
+    it 'raises FileServiceError when bucket does not exist' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
         stub_responses: {

@@ -134,7 +134,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
-    it 'raises FileServiceError when key ID is nil ' do
+    it 'raises FileServiceError when key ID is nil' do
       expect do
         file_service.write(plaintext_data, bucket_name, nil)
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
@@ -221,7 +221,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.to raise_exception(PorkyLib::FileServiceHelper::FileServiceError)
     end
 
-    it 'raises FileServiceError when file is nil ' do
+    it 'raises FileServiceError when file is nil' do
       expect do
         file_service.write_file(nil, bucket_name, default_key_id)
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
@@ -233,7 +233,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
-    it 'raises FileServiceError when key ID is nil ' do
+    it 'raises FileServiceError when key ID is nil' do
       expect do
         file_service.write_file(write_test_file(plaintext_data), bucket_name, nil)
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
@@ -297,25 +297,25 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
     end
 
-    it 'raises FileServiceError when data is nil ' do
+    it 'raises FileServiceError when data is nil' do
       expect do
         file_service.write_data(nil, bucket_name, default_key_id)
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
-    it 'raises FileServiceError when bucket name is nil ' do
+    it 'raises FileServiceError when bucket name is nil' do
       expect do
         file_service.write_data(plaintext_data, nil, default_key_id)
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
-    it 'raises FileServiceError when key ID is nil ' do
+    it 'raises FileServiceError when key ID is nil' do
       expect do
         file_service.write_data(plaintext_data, bucket_name, nil)
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
-    it 'raises FileServiceError when writing to bucket without permission ' do
+    it 'raises FileServiceError when writing to bucket without permission' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
         stub_responses: {
@@ -327,7 +327,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
-    it 'raises FileServiceError when writing to bucket that does not exist ' do
+    it 'raises FileServiceError when writing to bucket that does not exist' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
         stub_responses: {
@@ -399,7 +399,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
-    it 'raises FileServiceError when overwriting an existing file with nil file_key ' do
+    it 'raises FileServiceError when overwriting an existing file with nil file_key' do
       expect do
         file_service.overwrite_file(plaintext_data, nil, bucket_name, default_key_id)
       end.to raise_error(PorkyLib::FileService::FileServiceError)
@@ -411,7 +411,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
-    it 'raises FileServiceError when key ID is nil ' do
+    it 'raises FileServiceError when key ID is nil' do
       expect do
         file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, nil)
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
@@ -464,7 +464,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.to raise_exception(PorkyLib::FileService::FileSizeTooLargeError)
     end
 
-    it 'raises FileServiceError if reading from bucket without permission ' do
+    it 'raises FileServiceError if reading from bucket without permission' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
         stub_responses: {
@@ -476,7 +476,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
       end.to raise_exception(PorkyLib::FileService::FileServiceError)
     end
 
-    it 'raises FileServiceError when bucket does not exist ' do
+    it 'raises FileServiceError when bucket does not exist' do
       Aws.config[:s3].delete(:stub_responses)
       Aws.config[:s3] = {
         stub_responses: {
