@@ -4,7 +4,7 @@ jobs:
     parallelism: 1
     working_directory: ~/porky_lib
     docker:
-      - image: circleci/ruby:2.7.2
+      - image: circleci/ruby:3.0.2
 
     steps:
       - checkout
