@@ -7,12 +7,9 @@ updates:
     interval: daily
   open-pull-requests-limit: 10
   reviewers:
-  - michellefoy
   - weiyunlu
-  - nareshchinniTC
   assignees:
-  - michellefoy
-  - nareshchinniTC
+  - weiyunlu
   ignore:
   - dependency-name: aws-sdk-s3
     versions:
