@@ -12,6 +12,9 @@ class PorkyLib::Symmetric
   CMK_KEY_USAGE = 'ENCRYPT_DECRYPT'
   SYMMETRIC_KEY_SPEC = 'AES_256'
 
+  EncryptedText = Struct.new(:ciphertext, :nonce, :statistics)
+  DecryptedText = Struct.new(:plaintext, :statistics)
+
   def client
     require 'porky_lib/aws/kms/client' if PorkyLib::Config.config[:aws_client_mock]
     @client ||= Aws::KMS::Client.new
@@ -205,12 +208,7 @@ class PorkyLib::Symmetric
     # Encrypt a message with SecretBox
     ciphertext = secret_box.encrypt(nonce, plaintext)
 
-    result = OpenStruct.new
-
-    result.ciphertext = ciphertext
-    result.nonce = nonce
-
-    result
+    EncryptedText.new(ciphertext, nonce, nil)
   end
 
   def decrypt_with_key(ciphertext, plaintext_key, nonce)
@@ -220,11 +218,7 @@ class PorkyLib::Symmetric
     # Decrypt the message
     plaintext = secret_box.decrypt(nonce, ciphertext)
 
-    result = OpenStruct.new
-
-    result.plaintext = plaintext
-
-    result
+    DecryptedText.new(plaintext, nil)
   end
 
   def encrypt_with_key_with_benchmark(plaintext, plaintext_key)
@@ -245,13 +239,7 @@ class PorkyLib::Symmetric
       [nonce, ciphertext]
     end
 
-    result = OpenStruct.new
-
-    result.ciphertext = ciphertext
-    result.nonce = nonce
-    result.statistics = encryption_statistics
-
-    result
+    EncryptedText.new(ciphertext, nonce, encryption_statistics)
   end
 
   def decrypt_with_key_with_benchmark(ciphertext, plaintext_key, nonce)
@@ -266,12 +254,7 @@ class PorkyLib::Symmetric
       plaintext
     end
 
-    result = OpenStruct.new
-
-    result.plaintext = plaintext
-    result.statistics = encryption_statistics
-
-    result
+    DecryptedText.new(plaintext, encryption_statistics)
   end
 
   private
