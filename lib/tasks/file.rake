@@ -8,15 +8,15 @@ namespace :file do
     # Optional arguments
     use_mock_client = ENV.fetch('AWS_S3_MOCK_CLIENT', 'true') == 'true'
     max_file_size = ENV.fetch('AWS_S3_MAX_FILE_SIZE', 1_048_576).to_i
-    destination = ENV.fetch('DESTINATION', ENV['FILE_KEY'])
+    destination = ENV.fetch('DESTINATION', ENV.fetch('FILE_KEY', nil))
 
     # Required arguments
     arguments = {
-      file_key: ENV['FILE_KEY'],
-      aws_s3_bucket: ENV['AWS_S3_BUCKET'],
-      aws_region: ENV['AWS_REGION'],
-      aws_access_key_id: ENV['AWS_ACCESS_KEY_ID'],
-      aws_access_key: ENV['AWS_ACCESS_KEY']
+      file_key: ENV.fetch('FILE_KEY', nil),
+      aws_s3_bucket: ENV.fetch('AWS_S3_BUCKET', nil),
+      aws_region: ENV.fetch('AWS_REGION', nil),
+      aws_access_key_id: ENV.fetch('AWS_ACCESS_KEY_ID', nil),
+      aws_access_key: ENV.fetch('AWS_ACCESS_KEY', nil)
     }
 
     # Checks presence of required arguments and configures porky_lib
@@ -42,12 +42,12 @@ namespace :file do
 
     # Required arguments
     arguments = {
-      file_path: ENV['FILE_PATH'],
-      cmk_key_id: ENV['CMK_KEY_ID'],
-      aws_s3_bucket: ENV['AWS_S3_BUCKET'],
-      aws_region: ENV['AWS_REGION'],
-      aws_access_key_id: ENV['AWS_ACCESS_KEY_ID'],
-      aws_access_key: ENV['AWS_ACCESS_KEY']
+      file_path: ENV.fetch('FILE_PATH', nil),
+      cmk_key_id: ENV.fetch('CMK_KEY_ID', nil),
+      aws_s3_bucket: ENV.fetch('AWS_S3_BUCKET', nil),
+      aws_region: ENV.fetch('AWS_REGION', nil),
+      aws_access_key_id: ENV.fetch('AWS_ACCESS_KEY_ID', nil),
+      aws_access_key: ENV.fetch('AWS_ACCESS_KEY', nil)
     }
 
     # Checks presence of required arguments and configures porky_lib

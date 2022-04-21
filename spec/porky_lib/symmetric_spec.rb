@@ -93,24 +93,24 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
   shared_examples_for 'Encrypt and decrypt tests' do
     it 'Encrypt returns non-null values for ciphertext key, ciphertext data, and nonce' do
       key, data, nonce = symmetric.send(encrypt_function, plaintext_data, default_key_id, nil, default_encryption_context)
-      expect(key).not_to be nil
-      expect(data).not_to be nil
-      expect(nonce).not_to be nil
+      expect(key).not_to be_nil
+      expect(data).not_to be_nil
+      expect(nonce).not_to be_nil
     end
 
     it 'Encrypt returns non-null values for ciphertext key, ciphertext data, and nonce with existing data encryption key' do
       _, ciphertext_key = symmetric.generate_data_encryption_key(default_key_id, default_encryption_context)
       key, data, nonce = symmetric.send(encrypt_function, plaintext_data, default_key_id, ciphertext_key, default_encryption_context)
       expect(key).to eq(ciphertext_key)
-      expect(data).not_to be nil
-      expect(nonce).not_to be nil
+      expect(data).not_to be_nil
+      expect(nonce).not_to be_nil
     end
 
     it 'Encrypt returns non-null values with no encryption context for ciphertext key, ciphertext data, and nonce' do
       key, data, nonce = symmetric.send(encrypt_function, plaintext_data, default_key_id)
-      expect(key).not_to be nil
-      expect(data).not_to be nil
-      expect(nonce).not_to be nil
+      expect(key).not_to be_nil
+      expect(data).not_to be_nil
+      expect(nonce).not_to be_nil
     end
 
     it 'Encrypt with bad CMK key ID raises NotFoundException' do
@@ -196,8 +196,8 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
 
   it 'Generate data encryption key returns non-null values for plaintext_key and ciphertext_key' do
     plaintext_key, ciphertext_key = symmetric.generate_data_encryption_key(default_key_id, default_encryption_context)
-    expect(plaintext_key).not_to be nil
-    expect(ciphertext_key).not_to be nil
+    expect(plaintext_key).not_to be_nil
+    expect(ciphertext_key).not_to be_nil
   end
 
   it 'Generate data encryption key with bad CMK key ID raises NotFoundException' do
@@ -208,7 +208,7 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
 
   it 'Create key returns non-null value for key ID' do
     key_id = symmetric.create_key(default_tags, key_alias)
-    expect(key_id).not_to be nil
+    expect(key_id).not_to be_nil
   end
 
   it 'Create key raises TagException for invalid tags' do
