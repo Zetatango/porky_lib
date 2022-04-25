@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-if ENV['COVERAGE'] || ENV['CI']
+if ENV.fetch('COVERAGE', nil) || ENV.fetch('CI', nil)
   require 'simplecov'
   require 'codacy-coverage'
   require 'codecov'
