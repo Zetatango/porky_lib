@@ -78,6 +78,7 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     end
   end
 
+  # rubocop:disable RSpec/NoExpectationExample
   describe '#write' do
     it 'raises FileServiceError when file is nil' do
       expect do
@@ -350,4 +351,5 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
       end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
     end
   end
+  # rubocop:enable RSpec/NoExpectationExample
 end
