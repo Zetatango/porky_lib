@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    porky_lib (0.11.1)
+    porky_lib (0.11.3)
       aws-sdk-kms
       aws-sdk-s3
       msgpack
@@ -27,6 +27,7 @@ GEM
       aws-sigv4 (~> 1.6)
     aws-sigv4 (1.6.0)
       aws-eventstream (~> 1, >= 1.0.2)
+    base64 (0.1.1)
     bundler-audit (0.9.1)
       bundler (>= 1.2.0, < 3)
       thor (~> 1.0)
@@ -40,6 +41,7 @@ GEM
     ffi (1.15.4)
     jmespath (1.6.2)
     json (2.6.3)
+    language_server-protocol (3.17.0.3)
     msgpack (1.7.2)
     parallel (1.23.0)
     parser (3.2.2.4)
@@ -69,14 +71,16 @@ GEM
     rspec-support (3.10.3)
     rspec_junit_formatter (0.6.0)
       rspec-core (>= 2, < 4, != 2.12.0)
-    rubocop (1.43.0)
+    rubocop (1.56.4)
+      base64 (~> 0.1.1)
       json (~> 2.3)
+      language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
-      parser (>= 3.2.0.0)
+      parser (>= 3.2.2.3)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.8, < 3.0)
       rexml (>= 3.2.5, < 4.0)
-      rubocop-ast (>= 1.24.1, < 2.0)
+      rubocop-ast (>= 1.28.1, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 3.0)
     rubocop-ast (1.29.0)
@@ -108,17 +112,13 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  aws-sdk-kms
-  aws-sdk-s3
   bundler
   bundler-audit
   byebug
   codacy-coverage
   codecov
-  msgpack
   porky_lib!
   rake
-  rbnacl (= 7.1.1)
   rspec
   rspec-collection_matchers
   rspec-mocks
@@ -131,7 +131,7 @@ DEPENDENCIES
   timecop
 
 RUBY VERSION
-   ruby 3.0.2p107
+   ruby 3.2.2p53
 
 BUNDLED WITH
    2.2.22

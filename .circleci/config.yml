@@ -4,7 +4,7 @@ jobs:
     parallelism: 1
     working_directory: ~/porky_lib
     docker:
-      - image: circleci/ruby:3.0.2
+      - image: cimg/ruby:3.2.2
 
     steps:
       - checkout
@@ -26,10 +26,6 @@ jobs:
       - run:
           name: Bundle Install
           command: bundle install
-
-      - run:
-          name: Install libsodium
-          command: sudo apt-get install libsodium-dev
 
       - save_cache:
           name: Store bundle cache

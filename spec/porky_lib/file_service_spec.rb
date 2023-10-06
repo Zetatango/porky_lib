@@ -255,13 +255,13 @@ RSpec.describe PorkyLib::FileService, type: :request do
 
     it 'writes encrypted data to S3 with metadata' do
       metadata = { content_type: 'test/data' }
-      file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id, metadata: metadata)
+      file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id, metadata:)
       expect(file_key).not_to be_nil
     end
 
     it 'writes plaintext data to S3 with a different storage_class' do
       storage_class = 'REDUCED_REDUNDANCY'
-      file_key = file_service.write_data(plaintext_data, bucket_name, storage_class: storage_class)
+      file_key = file_service.write_data(plaintext_data, bucket_name, storage_class:)
       expect(file_key).not_to be_nil
     end
 
@@ -370,7 +370,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
     it 'overwrites encrypted data to S3 with metadata' do
       expect do
         metadata = { content_type: 'test/data' }
-        file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id, metadata: metadata)
+        file_service.overwrite_file(plaintext_data, default_file_key, bucket_name, default_key_id, metadata:)
       end.not_to raise_exception
     end
 
@@ -492,7 +492,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
 
   it 'file_contents contains associated metadata if provided' do
     file_data = JSON.parse(ciphertext_data, symbolize_names: true)
-    file_contents = file_service.send(:file_contents, file_data[:key], file_data[:data], file_data[:nonce], metadata: metadata)
+    file_contents = file_service.send(:file_contents, file_data[:key], file_data[:data], file_data[:nonce], metadata:)
     expect(JSON.parse(file_contents, symbolize_names: true)[:metadata]).to eq(metadata)
   end
 
@@ -612,7 +612,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
     end
 
     it 'passes metadata if provided' do
-      url, _file_name = file_service.presigned_post_url(bucket_name, metadata: metadata)
+      url, _file_name = file_service.presigned_post_url(bucket_name, metadata:)
       uri = URI.parse(url)
       query_params = CGI.parse(uri.query)
 

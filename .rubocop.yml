@@ -11,7 +11,7 @@ AllCops:
     - output/**/*
     - vendor/**/*
     - spec/porky_lib/data/*
-  TargetRubyVersion: 2.7.2
+  TargetRubyVersion: 3.2.2
   RSpec:
     Patterns:
       - _spec.rb
