@@ -27,10 +27,6 @@ jobs:
           name: Bundle Install
           command: bundle install
 
-      - run:
-          name: Install libsodium
-          command: sudo apt-get install libsodium-dev
-
       - save_cache:
           name: Store bundle cache
           key: porky_lib-bundle-{{ checksum "Gemfile.lock" }}
