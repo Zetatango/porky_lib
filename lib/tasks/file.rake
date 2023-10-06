@@ -55,7 +55,7 @@ namespace :file do
     setup_porky_lib(arguments, use_mock_client, max_file_size)
 
     write_options = {
-      storage_class: storage_class,
+      storage_class:,
       file_name: (File.basename(arguments[:file_path]) if keep_file_name)
     }.compact
 
@@ -80,6 +80,6 @@ def setup_porky_lib(arguments, use_mock_client, max_file_size)
                              aws_key_id: arguments[:aws_access_key_id],
                              aws_key_secret: arguments[:aws_access_key],
                              aws_client_mock: use_mock_client,
-                             max_file_size: max_file_size)
+                             max_file_size:)
   PorkyLib::Config.initialize_aws
 end

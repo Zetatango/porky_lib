@@ -22,7 +22,7 @@ class PorkyLib::Symmetric
 
   # rubocop:disable Style/OptionalBooleanParameter
   def create_key(tags, key_alias = nil, key_rotation_enabled = true)
-    resp = client.create_key(key_usage: CMK_KEY_USAGE, origin: CMK_KEY_ORIGIN, tags: tags)
+    resp = client.create_key(key_usage: CMK_KEY_USAGE, origin: CMK_KEY_ORIGIN, tags:)
     key_id = resp.to_h[:key_metadata][:key_id]
 
     # Enable automatic key rotation for the newly created CMK
@@ -45,7 +45,7 @@ class PorkyLib::Symmetric
   end
 
   def enable_key_rotation(key_id)
-    client.enable_key_rotation(key_id: key_id)
+    client.enable_key_rotation(key_id:)
   end
 
   def create_alias(key_id, key_alias)
@@ -54,14 +54,14 @@ class PorkyLib::Symmetric
 
   def generate_data_encryption_key(cmk_key_id, encryption_context = nil)
     resp = {}
-    resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC, encryption_context: encryption_context) if encryption_context
+    resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC, encryption_context:) if encryption_context
     resp = client.generate_data_key(key_id: cmk_key_id, key_spec: SYMMETRIC_KEY_SPEC) unless encryption_context
 
     [resp.plaintext, resp.ciphertext_blob]
   end
 
   def decrypt_data_encryption_key(ciphertext_key, encryption_context = nil)
-    return client.decrypt(ciphertext_blob: ciphertext_key, encryption_context: encryption_context).plaintext if encryption_context
+    return client.decrypt(ciphertext_blob: ciphertext_key, encryption_context:).plaintext if encryption_context
 
     resp = client.decrypt(ciphertext_blob: ciphertext_key)
     resp.plaintext

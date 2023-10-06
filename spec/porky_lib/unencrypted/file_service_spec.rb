@@ -200,13 +200,13 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
 
     it 'writes plaintext data to S3 with metadata' do
       metadata = { content_type: 'test/data' }
-      file_key = file_service.write_data(plaintext_data, bucket_name, metadata: metadata)
+      file_key = file_service.write_data(plaintext_data, bucket_name, metadata:)
       expect(file_key).not_to be_nil
     end
 
     it 'writes plaintext data to S3 with a different storage_class' do
       storage_class = 'REDUCED_REDUNDANCY'
-      file_key = file_service.write_data(plaintext_data, bucket_name, storage_class: storage_class)
+      file_key = file_service.write_data(plaintext_data, bucket_name, storage_class:)
       expect(file_key).not_to be_nil
     end
 

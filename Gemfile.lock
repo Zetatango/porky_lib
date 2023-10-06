@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    porky_lib (0.11.1)
+    porky_lib (0.11.3)
       aws-sdk-kms
       aws-sdk-s3
       msgpack
@@ -112,17 +112,13 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  aws-sdk-kms
-  aws-sdk-s3
   bundler
   bundler-audit
   byebug
   codacy-coverage
   codecov
-  msgpack
   porky_lib!
   rake
-  rbnacl (= 7.1.1)
   rspec
   rspec-collection_matchers
   rspec-mocks
@@ -135,7 +131,7 @@ DEPENDENCIES
   timecop
 
 RUBY VERSION
-   ruby 3.0.2p107
+   ruby 3.2.2p53
 
 BUNDLED WITH
    2.2.22

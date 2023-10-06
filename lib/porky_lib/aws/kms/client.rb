@@ -25,8 +25,8 @@ class Aws::KMS::Client
         enabled: true,
         key_id: SecureRandom.uuid,
         key_state: 'Enabled',
-        key_usage: key_usage,
-        origin: origin
+        key_usage:,
+        origin:
       }
     )
   end
@@ -64,8 +64,8 @@ class Aws::KMS::Client
 
     plaintext = SecureRandom.random_bytes(PLAINTEXT_KEY_LENGTH)
     Aws::KMS::Types::GenerateDataKeyResponse.new(
-      key_id: key_id,
-      plaintext: plaintext,
+      key_id:,
+      plaintext:,
       ciphertext_blob: [key_id, encryption_context, plaintext].to_msgpack.reverse
     )
   end
@@ -76,8 +76,8 @@ class Aws::KMS::Client
     raise Aws::KMS::Errors::InvalidCiphertextException.new(nil, nil) unless decoded_context == encryption_context
 
     Aws::KMS::Types::DecryptResponse.new(
-      key_id: key_id,
-      plaintext: plaintext
+      key_id:,
+      plaintext:
     )
   rescue MessagePack::MalformedFormatError
     raise Aws::KMS::Errors::InvalidCiphertextException.new(nil, nil)
