@@ -7,9 +7,8 @@ jobs:
       - image: cimg/ruby:3.2.2
 
     steps:
-      - checkout
-
-      - method: full
+      - checkout:
+          method: full
 
       - restore_cache:
           name: Restore bundle cache
