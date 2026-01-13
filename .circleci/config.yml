@@ -9,6 +9,8 @@ jobs:
     steps:
       - checkout
 
+      - method: full
+
       - restore_cache:
           name: Restore bundle cache
           keys:
