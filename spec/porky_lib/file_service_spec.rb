@@ -100,8 +100,9 @@ RSpec.describe PorkyLib::FileService, type: :request do
   end
 
   def test_file_content(expected_content, binary: false)
-    allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
-    allow(aws_s3_object).to receive(:upload_file)
+    aws_s3_client = instance_double(Aws::S3::Client)
+    allow(Aws::S3::Client).to receive(:new).and_return(aws_s3_client)
+    allow(aws_s3_client).to receive(:put_object)
 
     tempfile = Tempfile.new
     allow(Tempfile).to receive(:new).and_return(tempfile)
@@ -110,7 +111,10 @@ RSpec.describe PorkyLib::FileService, type: :request do
 
     file_key = yield
 
-    expect(aws_s3_object).to have_received(:upload_file) do |_tempfile_path|
+    expect(aws_s3_client).to have_received(:put_object) do |options|
+      body_content = options[:body].read
+      tempfile.rewind
+      tempfile.write(body_content)
       tempfile.rewind
 
       message, = file_service.send(:decrypt_file_contents, tempfile)

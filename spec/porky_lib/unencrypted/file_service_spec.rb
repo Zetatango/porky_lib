@@ -65,14 +65,15 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
   end
 
   def test_file_content(expected_content, binary: false)
-    allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
-    allow(aws_s3_object).to receive(:upload_file)
+    aws_s3_client = instance_double(Aws::S3::Client)
+    allow(Aws::S3::Client).to receive(:new).and_return(aws_s3_client)
+    allow(aws_s3_client).to receive(:put_object)
 
     file_key = yield
 
     expect(file_key).not_to be_nil
-    expect(aws_s3_object).to have_received(:upload_file) do |tempfile_path|
-      data = File.read(tempfile_path)
+    expect(aws_s3_client).to have_received(:put_object) do |options|
+      data = options[:body].read
       data = (+data).force_encoding("ASCII-8BIT") if binary
       expect(data).to eq(expected_content)
     end
@@ -110,9 +111,9 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
 
     it 'writes the right image file content to S3 if path is used' do
       path = "spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}image.png"
-      data = File.read(path)
+      data = File.read(path, encoding: 'ASCII-8BIT')
 
-      test_file_content(data) do
+      test_file_content(data, binary: true) do
         file_service.write(path, bucket_name)
       end
     end
@@ -228,9 +229,9 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     end
 
     it 'writes the right image file content to S3 if content is used' do
-      data = File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}image.png")
+      data = File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}image.png", encoding: 'ASCII-8BIT')
 
-      test_file_content(data) do
+      test_file_content(data, binary: true) do
         file_service.write_data(data, bucket_name)
       end
     end

@@ -35,18 +35,23 @@ module PorkyLib::FileServiceHelper
   end
 
   def perform_upload(bucket_name, file_key, tempfile, options)
-    obj = s3.bucket(bucket_name).object(file_key)
-
     upload_options = {
+      bucket: bucket_name,
+      key: file_key,
+      body: File.open(tempfile.path, 'rb'),
       metadata: (options[:metadata] if options.key?(:metadata)),
       storage_class: (options[:storage_class] if options.key?(:storage_class))
     }.compact
 
-    obj.upload_file(tempfile.path, upload_options)
+    s3_client.put_object(upload_options)
   end
 
   def s3
     @s3 ||= Aws::S3::Resource.new
+  end
+
+  def s3_client
+    @s3_client ||= Aws::S3::Client.new
   end
 
   def max_size

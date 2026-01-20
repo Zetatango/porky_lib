@@ -20,6 +20,7 @@ end
 
 require 'bundler/setup'
 require 'byebug'
+require 'cgi'
 require 'logger'
 require 'msgpack'
 require 'porky_lib'
