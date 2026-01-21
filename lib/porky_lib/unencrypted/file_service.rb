@@ -3,8 +3,6 @@
 require 'singleton'
 
 class PorkyLib::Unencrypted::FileService
-  extend Gem::Deprecate
-
   include Singleton
   include PorkyLib::FileServiceHelper
 
@@ -26,17 +24,6 @@ class PorkyLib::Unencrypted::FileService
 
     tempfile.read
   end
-
-  def write(file, bucket_name, options = {})
-    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name)
-
-    if file?(file)
-      write_file(file, bucket_name, options)
-    else
-      write_data(file, bucket_name, options)
-    end
-  end
-  deprecate :write, 'write_file or write_data', 2020, 1
 
   def write_file(file, bucket_name, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name)

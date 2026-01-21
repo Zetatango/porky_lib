@@ -5,7 +5,7 @@ PATH
       aws-sdk-kms
       aws-sdk-s3
       msgpack
-      rbnacl (= 7.1.1)
+      rbnacl (~> 7.1)
 
 GEM
   remote: https://rubygems.org/

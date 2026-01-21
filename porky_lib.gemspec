@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'aws-sdk-kms'
   spec.add_dependency 'aws-sdk-s3'
   spec.add_dependency 'msgpack'
-  spec.add_dependency 'rbnacl', '=7.1.1'
+  spec.add_dependency 'rbnacl', '~> 7.1'
   spec.metadata = {
     'rubygems_mfa_required' => 'true'
   }

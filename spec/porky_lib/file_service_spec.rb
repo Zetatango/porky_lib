@@ -126,69 +126,6 @@ RSpec.describe PorkyLib::FileService, type: :request do
   end
 
   # rubocop:disable RSpec/NoExpectationExample
-  describe '#write' do
-    it 'raises FileServiceError when file is nil' do
-      expect do
-        file_service.write(nil, bucket_name, default_key_id)
-      end.to raise_exception(PorkyLib::FileService::FileServiceError)
-    end
-
-    it 'raises FileServiceError when bucket name is nil' do
-      expect do
-        file_service.write(plaintext_data, nil, default_key_id)
-      end.to raise_exception(PorkyLib::FileService::FileServiceError)
-    end
-
-    it 'raises FileServiceError when key ID is nil' do
-      expect do
-        file_service.write(plaintext_data, bucket_name, nil)
-      end.to raise_exception(PorkyLib::FileService::FileServiceError)
-    end
-
-    it 'writes the right content to S3 if file object is used' do
-      file = write_test_file(plaintext_data)
-
-      test_file_content(plaintext_data) do
-        file_service.write(file, bucket_name, default_key_id)
-      end
-    end
-
-    it 'writes the right content to S3 if path is used' do
-      path = write_test_file(plaintext_data).path
-
-      test_file_content(plaintext_data) do
-        file_service.write(path, bucket_name, default_key_id)
-      end
-    end
-
-    it 'writes the right image file content to S3 if path is used' do
-      path = "spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}image.png"
-      data = File.read(path, encoding: 'ASCII-8BIT')
-
-      test_file_content(data, binary: true) do
-        file_service.write(path, bucket_name, default_key_id)
-      end
-    end
-
-    it 'writes the right content to S3 if content is used' do
-      test_file_content(plaintext_data) do
-        file_service.write(plaintext_data, bucket_name, default_key_id)
-      end
-    end
-
-    it 'handles contents containing a null byte when reading a file' do
-      test_file_content(null_byte_contents, binary: true) do
-        file_service.write(null_byte_contents, bucket_name, default_key_id)
-      end
-    end
-
-    it 'handles content encoded as ASCII_8BIT (BINARY) when creating the tempfile' do
-      test_file_content(binary_contents, binary: true) do
-        file_service.write(binary_contents, bucket_name, default_key_id)
-      end
-    end
-  end
-
   describe '#write_file' do
     it 'writes file to s3' do
       file_key = file_service.write_file(write_test_file(plaintext_data), bucket_name, default_key_id)
@@ -425,7 +362,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
 
   describe '#read' do
     it 'reads encrypted data from S3' do
-      file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+      file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id)
 
       plaintext, should_reencrypt = file_service.read(bucket_name, file_key)
       expect(plaintext_data).to eq(plaintext)
@@ -434,7 +371,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
 
     it 'reads encrypted data from S3 with directory' do
       dir_name = 'directory1/dirA'
-      file_key = file_service.write(plaintext_data, bucket_name, default_key_id, directory: dir_name)
+      file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id, directory: dir_name)
       expect(file_key).to include(dir_name)
 
       plaintext, should_reencrypt = file_service.read(bucket_name, file_key)
@@ -444,7 +381,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
 
     it 'reads encrypted data from S3 which should be re-encrypted' do
       stub_data_to_be_reencrypted
-      file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+      file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id)
 
       plaintext, should_reencrypt = file_service.read(bucket_name, file_key)
       expect(plaintext_data).to eq(plaintext)
@@ -453,7 +390,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
 
     it 'reads large encrypted data from S3' do
       stub_large_file
-      file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+      file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id)
 
       plaintext, = file_service.read(bucket_name, file_key)
       expect(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).to eq(plaintext)
@@ -461,7 +398,7 @@ RSpec.describe PorkyLib::FileService, type: :request do
 
     it 'reads encrypted data too large from S3' do
       stub_large_file
-      file_key = file_service.write(plaintext_data, bucket_name, default_key_id)
+      file_key = file_service.write_data(plaintext_data, bucket_name, default_key_id)
 
       PorkyLib::Config.configure(max_file_size: 10 * 1024)
       expect do
@@ -690,6 +627,114 @@ RSpec.describe PorkyLib::FileService, type: :request do
       rescue PorkyLib::FileService::FileServiceError => e
         expect(e.message).to match(/\APresignedGetUrl for #{default_file_key} from S3 bucket #{bucket_name} failed:\s+/)
       end
+    end
+  end
+
+  describe 'presigned URL expiration edge cases' do
+    it 'uses custom expiration time for presigned POST URL' do
+      custom_expires_in = 600
+      PorkyLib::Config.configure(default_config.merge(presign_url_expires_in: custom_expires_in))
+
+      url, _file_name = file_service.presigned_post_url(bucket_name)
+      uri = URI.parse(url)
+      query_params = CGI.parse(uri.query)
+
+      expect(query_params["X-Amz-Expires"]).to eq([custom_expires_in.to_s])
+    end
+
+    it 'uses custom expiration time for presigned GET URL' do
+      custom_expires_in = 3600
+      PorkyLib::Config.configure(default_config.merge(presign_url_expires_in: custom_expires_in))
+
+      url = file_service.presigned_get_url(bucket_name, default_file_key)
+      uri = URI.parse(url)
+      query_params = CGI.parse(uri.query)
+
+      expect(query_params["X-Amz-Expires"]).to eq([custom_expires_in.to_s])
+    end
+
+    it 'uses minimum expiration time (1 second)' do
+      min_expires_in = 1
+      PorkyLib::Config.configure(default_config.merge(presign_url_expires_in: min_expires_in))
+
+      url, _file_name = file_service.presigned_post_url(bucket_name)
+      uri = URI.parse(url)
+      query_params = CGI.parse(uri.query)
+
+      expect(query_params["X-Amz-Expires"]).to eq([min_expires_in.to_s])
+    end
+
+    it 'handles large expiration time (7 days max for S3)' do
+      max_expires_in = 604_800 # 7 days in seconds
+      PorkyLib::Config.configure(default_config.merge(presign_url_expires_in: max_expires_in))
+
+      url, _file_name = file_service.presigned_post_url(bucket_name)
+      uri = URI.parse(url)
+      query_params = CGI.parse(uri.query)
+
+      expect(query_params["X-Amz-Expires"]).to eq([max_expires_in.to_s])
+    end
+  end
+
+  describe 'error message assertions' do
+    it 'includes descriptive message when write_file receives nil file' do
+      expect do
+        file_service.write_file(nil, bucket_name, default_key_id)
+      end.to raise_error(PorkyLib::FileService::FileServiceError, 'Invalid input. One or more input values is nil')
+    end
+
+    it 'includes descriptive message when write_data receives nil data' do
+      expect do
+        file_service.write_data(nil, bucket_name, default_key_id)
+      end.to raise_error(PorkyLib::FileService::FileServiceError, 'Invalid input. One or more input values is nil')
+    end
+
+    it 'includes file size in FileSizeTooLargeError message for write_data' do
+      allow(PorkyLib::Config).to receive(:config).and_return(PorkyLib::Config.config.merge(max_file_size: 1))
+      expect do
+        file_service.write_data(plaintext_data, bucket_name, default_key_id)
+      end.to raise_error(PorkyLib::FileService::FileSizeTooLargeError, /Data size is larger than maximum allowed size of/)
+    end
+
+    # rubocop:disable RSpec/ExampleLength
+    it 'includes file size in FileSizeTooLargeError message for read' do
+      Aws.config[:s3] = {
+        stub_responses: {
+          head_object: {
+            content_length: 1_000_000_000
+          }
+        }
+      }
+      allow(PorkyLib::Config).to receive(:config).and_return(PorkyLib::Config.config.merge(max_file_size: 1))
+      expect do
+        file_service.read(bucket_name, default_file_key)
+      end.to raise_error(PorkyLib::FileService::FileSizeTooLargeError, /File size is larger than maximum allowed size of/)
+    end
+
+    it 'includes original error message when S3 download fails' do
+      Aws.config[:s3] = {
+        stub_responses: {
+          head_object: {
+            content_length: 100
+          },
+          get_object: 'Forbidden'
+        }
+      }
+      expect do
+        file_service.read(bucket_name, default_file_key)
+      end.to raise_error(PorkyLib::FileService::FileServiceError, /Attempt to download a file from S3 failed/)
+    end
+    # rubocop:enable RSpec/ExampleLength
+
+    it 'includes original error message when S3 upload fails' do
+      Aws.config[:s3] = {
+        stub_responses: {
+          put_object: 'Forbidden'
+        }
+      }
+      expect do
+        file_service.write_data(plaintext_data, bucket_name, default_key_id)
+      end.to raise_error(PorkyLib::FileService::FileServiceError, /Attempt to upload a file to S3 failed/)
     end
   end
   # rubocop:enable RSpec/NoExpectationExample
