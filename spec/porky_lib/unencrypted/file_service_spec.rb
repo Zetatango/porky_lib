@@ -65,77 +65,21 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
   end
 
   def test_file_content(expected_content, binary: false)
-    allow(Aws::S3::Object).to receive(:new).and_return(aws_s3_object)
-    allow(aws_s3_object).to receive(:upload_file)
+    aws_s3_client = instance_double(Aws::S3::Client)
+    allow(Aws::S3::Client).to receive(:new).and_return(aws_s3_client)
+    allow(aws_s3_client).to receive(:put_object)
 
     file_key = yield
 
     expect(file_key).not_to be_nil
-    expect(aws_s3_object).to have_received(:upload_file) do |tempfile_path|
-      data = File.read(tempfile_path)
+    expect(aws_s3_client).to have_received(:put_object) do |options|
+      data = options[:body].read
       data = (+data).force_encoding("ASCII-8BIT") if binary
       expect(data).to eq(expected_content)
     end
   end
 
   # rubocop:disable RSpec/NoExpectationExample
-  describe '#write' do
-    it 'raises FileServiceError when file is nil' do
-      expect do
-        file_service.write(nil, bucket_name)
-      end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
-    end
-
-    it 'raises FileServiceError when bucket name is nil' do
-      expect do
-        file_service.write(plaintext_data, nil)
-      end.to raise_exception(PorkyLib::Unencrypted::FileService::FileServiceError)
-    end
-
-    it 'writes the right content to S3 if file object is used' do
-      file = write_test_file(plaintext_data)
-
-      test_file_content(plaintext_data) do
-        file_service.write(file, bucket_name)
-      end
-    end
-
-    it 'writes the right content to S3 if path is used' do
-      path = write_test_file(plaintext_data).path
-
-      test_file_content(plaintext_data) do
-        file_service.write(path, bucket_name)
-      end
-    end
-
-    it 'writes the right image file content to S3 if path is used' do
-      path = "spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}image.png"
-      data = File.read(path)
-
-      test_file_content(data) do
-        file_service.write(path, bucket_name)
-      end
-    end
-
-    it 'writes the right content to S3 if content is used' do
-      test_file_content(plaintext_data) do
-        file_service.write(plaintext_data, bucket_name)
-      end
-    end
-
-    it 'handles contents containing a null byte when reading a file and writes the right content' do
-      test_file_content(null_byte_contents, binary: true) do
-        file_service.write(null_byte_contents, bucket_name)
-      end
-    end
-
-    it 'handles content encoded as ASCII_8BIT (BINARY) when creating the tempfile and writes the right content' do
-      test_file_content(binary_contents, binary: true) do
-        file_service.write(binary_contents, bucket_name)
-      end
-    end
-  end
-
   describe '#write_file' do
     it 'writes file to s3' do
       file_key = file_service.write_file(write_test_file(plaintext_data), bucket_name)
@@ -228,9 +172,9 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
     end
 
     it 'writes the right image file content to S3 if content is used' do
-      data = File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}image.png")
+      data = File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}image.png", encoding: 'ASCII-8BIT')
 
-      test_file_content(data) do
+      test_file_content(data, binary: true) do
         file_service.write_data(data, bucket_name)
       end
     end
@@ -294,7 +238,7 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
 
   describe '#read' do
     it 'reads plaintext data from S3' do
-      file_key = file_service.write(plaintext_data, bucket_name)
+      file_key = file_service.write_data(plaintext_data, bucket_name)
 
       plaintext = file_service.read(bucket_name, file_key)
       expect(plaintext_data).to eq(plaintext)
@@ -302,7 +246,7 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
 
     it 'reads plaintext data from S3 with directory' do
       dir_name = 'directory1/dirA'
-      file_key = file_service.write(plaintext_data, bucket_name, directory: dir_name)
+      file_key = file_service.write_data(plaintext_data, bucket_name, directory: dir_name)
       expect(file_key).to include(dir_name)
 
       plaintext = file_service.read(bucket_name, file_key)
@@ -311,7 +255,7 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
 
     it 'reads large plaintext data from S3' do
       stub_large_file
-      file_key = file_service.write(plaintext_data, bucket_name)
+      file_key = file_service.write_data(plaintext_data, bucket_name)
 
       plaintext, = file_service.read(bucket_name, file_key)
       expect(File.read("spec#{File::SEPARATOR}porky_lib#{File::SEPARATOR}data#{File::SEPARATOR}large_plaintext")).to eq(plaintext)
@@ -319,7 +263,7 @@ RSpec.describe PorkyLib::Unencrypted::FileService, type: :request do
 
     it 'reads plaintext data too large from S3' do
       stub_large_file
-      file_key = file_service.write(plaintext_data, bucket_name)
+      file_key = file_service.write_data(plaintext_data, bucket_name)
 
       PorkyLib::Config.configure(max_file_size: 10 * 1024)
       expect do

@@ -262,6 +262,113 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
     expect(symmetric.client.inspect).to eq('#<Aws::KMS::Client (mocked)>')
   end
 
+  describe 'edge cases for data sizes' do
+    it 'encrypts and decrypts empty string' do
+      empty_data = ''
+      key, ciphertext, nonce = symmetric.encrypt(empty_data, default_key_id)
+      plaintext, = symmetric.decrypt(key, ciphertext, nonce)
+      expect(plaintext).to eq(empty_data)
+    end
+
+    it 'encrypts and decrypts single character' do
+      single_char = 'a'
+      key, ciphertext, nonce = symmetric.encrypt(single_char, default_key_id)
+      plaintext, = symmetric.decrypt(key, ciphertext, nonce)
+      expect(plaintext).to eq(single_char)
+    end
+
+    it 'encrypts and decrypts single byte' do
+      single_byte = "\x00"
+      key, ciphertext, nonce = symmetric.encrypt(single_byte, default_key_id)
+      plaintext, = symmetric.decrypt(key, ciphertext, nonce)
+      expect(plaintext).to eq(single_byte)
+    end
+
+    it 'encrypts and decrypts data with null bytes' do
+      data_with_nulls = "hello\x00world\x00test"
+      key, ciphertext, nonce = symmetric.encrypt(data_with_nulls, default_key_id)
+      plaintext, = symmetric.decrypt(key, ciphertext, nonce)
+      expect(plaintext).to eq(data_with_nulls)
+    end
+
+    it 'encrypts and decrypts binary data' do
+      binary_data = (0..255).map(&:chr).join
+      key, ciphertext, nonce = symmetric.encrypt(binary_data, default_key_id)
+      plaintext, = symmetric.decrypt(key, ciphertext, nonce)
+      expect(plaintext.bytes).to eq(binary_data.bytes)
+    end
+
+    it 'encrypts and decrypts unicode data' do
+      unicode_data = '日本語テスト 🎉 مرحبا'
+      key, ciphertext, nonce = symmetric.encrypt(unicode_data, default_key_id)
+      plaintext, = symmetric.decrypt(key, ciphertext, nonce)
+      expect(plaintext.force_encoding('UTF-8')).to eq(unicode_data)
+    end
+
+    it 'encrypts and decrypts whitespace-only data' do
+      whitespace_data = "   \t\n\r  "
+      key, ciphertext, nonce = symmetric.encrypt(whitespace_data, default_key_id)
+      plaintext, = symmetric.decrypt(key, ciphertext, nonce)
+      expect(plaintext).to eq(whitespace_data)
+    end
+  end
+
+  # rubocop:disable RSpec/ExampleLength
+  describe 'thread safety' do
+    it 'returns the same instance from multiple threads' do
+      instances = []
+      threads = Array.new(10) do
+        Thread.new { instances << described_class.instance }
+      end
+      threads.each(&:join)
+
+      expect(instances.uniq.size).to eq(1)
+      expect(instances.all? { |i| i.equal?(described_class.instance) }).to be true
+    end
+
+    it 'handles concurrent encrypt operations' do
+      results = []
+      threads = Array.new(5) do |i|
+        Thread.new do
+          data = "test_data_#{i}"
+          key, ciphertext, nonce = symmetric.encrypt(data, default_key_id)
+          results << { key:, ciphertext:, nonce:, original: data }
+        end
+      end
+      threads.each(&:join)
+
+      expect(results.size).to eq(5)
+      results.each do |result|
+        plaintext, = symmetric.decrypt(result[:key], result[:ciphertext], result[:nonce])
+        expect(plaintext).to eq(result[:original])
+      end
+    end
+
+    it 'handles concurrent decrypt operations' do
+      # Pre-encrypt data
+      encrypted_data = Array.new(5) do |i|
+        data = "test_data_#{i}"
+        key, ciphertext, nonce = symmetric.encrypt(data, default_key_id)
+        { key:, ciphertext:, nonce:, original: data }
+      end
+
+      results = []
+      threads = encrypted_data.map do |data|
+        Thread.new do
+          plaintext, = symmetric.decrypt(data[:key], data[:ciphertext], data[:nonce])
+          results << { plaintext:, expected: data[:original] }
+        end
+      end
+      threads.each(&:join)
+
+      expect(results.size).to eq(5)
+      results.each do |result|
+        expect(result[:plaintext]).to eq(result[:expected])
+      end
+    end
+  end
+  # rubocop:enable RSpec/ExampleLength
+
   # rubocop:disable RSpec/MultipleExpectations
   describe 'for #encrypt_with_benchmark' do
     it 'returns encryption statistics' do

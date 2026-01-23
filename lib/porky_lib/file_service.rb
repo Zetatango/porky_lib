@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
+require 'base64'
 require 'singleton'
 
 class PorkyLib::FileService
-  extend Gem::Deprecate
-
   include Singleton
   include PorkyLib::FileServiceHelper
 
@@ -45,27 +44,17 @@ class PorkyLib::FileService
     tempfile = Tempfile.new
 
     begin
-      object = s3.bucket(bucket_name).object(file_key)
-      raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if object.content_length > max_size
+      head_response = s3_client.head_object(bucket: bucket_name, key: file_key)
+      raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if head_response.content_length > max_size
 
-      object.download_file(tempfile.path, options)
-    rescue Aws::Errors::ServiceError => e
+      get_options = { bucket: bucket_name, key: file_key, response_target: tempfile.path }.merge(options)
+      s3_client.get_object(get_options)
+    rescue Aws::Errors::ServiceError, Seahorse::Client::NetworkingError => e
       raise FileServiceError, "Attempt to download a file from S3 failed.\n#{e.message}"
     end
 
     decrypt_file_contents(tempfile)
   end
-
-  def write(file, bucket_name, key_id, options = {})
-    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
-
-    if file?(file)
-      write_file(file, bucket_name, key_id, options)
-    else
-      write_data(file, bucket_name, key_id, options)
-    end
-  end
-  deprecate :write, 'write_file or write_data', 2020, 1
 
   def write_file(file, bucket_name, key_id, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name, key_id)
@@ -86,7 +75,7 @@ class PorkyLib::FileService
 
     begin
       perform_upload(bucket_name, file_key, tempfile, options)
-    rescue Aws::Errors::ServiceError => e
+    rescue Aws::Errors::ServiceError, Seahorse::Client::NetworkingError => e
       raise FileServiceError, "Attempt to upload a file to S3 failed.\n#{e.message}"
     end
 
@@ -105,7 +94,7 @@ class PorkyLib::FileService
 
     begin
       perform_upload(bucket_name, file_key, tempfile, options)
-    rescue Aws::Errors::ServiceError => e
+    rescue Aws::Errors::ServiceError, Seahorse::Client::NetworkingError => e
       raise FileServiceError, "Attempt to upload a file to S3 failed.\n#{e.message}"
     end
 
@@ -174,10 +163,6 @@ class PorkyLib::FileService
 
   def presign_url_expires_in
     PorkyLib::Config.config[:presign_url_expires_in]
-  end
-
-  def s3_client
-    @s3_client ||= Aws::S3::Client.new
   end
 
   def input_invalid?(file_or_data, bucket_name, key_id)

@@ -4,10 +4,11 @@ jobs:
     parallelism: 1
     working_directory: ~/porky_lib
     docker:
-      - image: cimg/ruby:3.2.2
+      - image: cimg/ruby:3.2.5
 
     steps:
-      - checkout
+      - checkout:
+          method: full
 
       - restore_cache:
           name: Restore bundle cache

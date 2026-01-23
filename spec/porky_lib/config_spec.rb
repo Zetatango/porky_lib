@@ -16,10 +16,47 @@ RSpec.describe PorkyLib::Config, type: :request do
     described_class.configure(default_config)
   end
 
-  it "logger set directly is not nil" do
-    described_class.logger = Logger.new($stdout)
-    expect(described_class.logger).not_to be_nil
-    expect(described_class.logger).to be_a(Logger)
+  describe '#logger' do
+    before do
+      # Reset the logger before each test
+      described_class.instance_variable_set(:@logger, nil)
+    end
+
+    it 'returns a Logger instance when set directly' do
+      custom_logger = Logger.new($stdout)
+      described_class.logger = custom_logger
+      expect(described_class.logger).to eq(custom_logger)
+      expect(described_class.logger).to be_a(Logger)
+    end
+
+    it 'returns a default Logger when Rails is not defined' do
+      expect(described_class.logger).to be_a(Logger)
+    end
+
+    it 'uses Rails.logger when Rails is defined' do
+      rails_logger = Logger.new($stdout)
+      rails_module = Module.new do
+        define_singleton_method(:logger) { rails_logger }
+      end
+      stub_const('Rails', rails_module)
+
+      described_class.instance_variable_set(:@logger, nil)
+      expect(described_class.logger).to eq(rails_logger)
+    end
+
+    it 'caches the logger instance' do
+      logger1 = described_class.logger
+      logger2 = described_class.logger
+      expect(logger1.object_id).to eq(logger2.object_id)
+    end
+
+    it 'allows replacing the logger' do
+      original_logger = described_class.logger
+      new_logger = Logger.new($stderr)
+      described_class.logger = new_logger
+      expect(described_class.logger).to eq(new_logger)
+      expect(described_class.logger).not_to eq(original_logger)
+    end
   end
 
   describe '#config' do

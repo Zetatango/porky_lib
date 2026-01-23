@@ -154,16 +154,6 @@ file_data = PorkyLib::FileService.read(bucket_name, file_key)
 file_data = PorkyLib::Unencrypted::FileService.read(bucket_name, file_key)
 ```
 
-### To Write To AWS S3
-```ruby
-# --- DEPRECATED --- Please use write_data or write_file instead of write
-# Where file is the data to encrypt and upload to S3 (can be a path or raw data or ruby file object)
-# bucket_name is the name of the S3 bucket to write to
-# key_id is the ID of the CMK to use to generate a data encryption key to encrypt the file data
-# options is an optional parameter for specifying optional metadata about the file and the storage_class of the object
-file_key = PorkyLib::FileService.write(file, bucket_name, key_id, options)
-```
-
 ### To Write Files To AWS S3
 ```ruby
 # Where file is the data to encrypt and upload to S3 (can be a path or ruby file object)
@@ -180,15 +170,6 @@ file_key = PorkyLib::FileService.write_file(file, bucket_name, key_id, options)
 # key_id is the ID of the CMK to use to generate a data encryption key to encrypt the file data
 # options is an optional parameter for specifying optional metadata about the file and the storage_class of the object
 file_key = PorkyLib::FileService.write_data(data, bucket_name, key_id, options)
-```
-
-### To Write Unencrypted To AWS S3
-```ruby
-# --- DEPRECATED --- Please use write_data or write_file instead of write
-# Where file is the data to upload to S3 (can be a path or raw data or ruby file object)
-# bucket_name is the name of the S3 bucket to write to
-# options is an optional parameter for specifying optional metadata about the file and the storage_class of the object
-file_key = PorkyLib::Unencrypted::FileService.write(file, bucket_name, options)
 ```
 
 ### To Write Unencrypted Files To AWS S3
@@ -273,33 +254,33 @@ the likelihood of the pull request being accepted.
 
 This application requires:
 
-*   Ruby version: 2.7.2
+*   Ruby version: 3.2.5
 
-Ruby 2.7.2 and greater requires OpenSSL 1.1+. To link to Homebrew's upgraded version of OpenSSL, add the following to your bash profile
+Ruby 3.2+ requires OpenSSL 3.0+. To link to Homebrew's version of OpenSSL, add the following to your shell profile:
 
 ```shell script
-export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
+export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@3)"
 ```
 
 If you do not have Ruby installed, it is recommended you use ruby-install and chruby to manage Ruby versions.
 
 ```bash
 brew install ruby-install chruby
-ruby-install ruby 2.7.2
+ruby-install ruby 3.2.5
 ```
 
-Add the following lines to ~/.bash_profile:
+Add the following lines to ~/.zshrc (or ~/.bash_profile for bash):
 
 ```bash
-source /usr/local/opt/chruby/share/chruby/chruby.sh
-source /usr/local/opt/chruby/share/chruby/auto.sh
+source /opt/homebrew/opt/chruby/share/chruby/chruby.sh
+source /opt/homebrew/opt/chruby/share/chruby/auto.sh
 ```
 
-Set Ruby version to 2.7.2:
+Set Ruby version to 3.2.5:
 
 ```bash
-source ~/.bash_profile
-chruby 2.7.2
+source ~/.zshrc
+chruby 3.2.5
 ```
 
 ### Running Tests

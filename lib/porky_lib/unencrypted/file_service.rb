@@ -3,8 +3,6 @@
 require 'singleton'
 
 class PorkyLib::Unencrypted::FileService
-  extend Gem::Deprecate
-
   include Singleton
   include PorkyLib::FileServiceHelper
 
@@ -15,27 +13,17 @@ class PorkyLib::Unencrypted::FileService
     tempfile = Tempfile.new
 
     begin
-      object = s3.bucket(bucket_name).object(file_key)
-      raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if object.content_length > max_size
+      head_response = s3_client.head_object(bucket: bucket_name, key: file_key)
+      raise FileSizeTooLargeError, "File size is larger than maximum allowed size of #{max_file_size}" if head_response.content_length > max_size
 
-      object.download_file(tempfile.path, options)
+      get_options = { bucket: bucket_name, key: file_key, response_target: tempfile.path }.merge(options)
+      s3_client.get_object(get_options)
     rescue Aws::Errors::ServiceError, Seahorse::Client::NetworkingError => e
       raise FileServiceError, "Attempt to download a file from S3 failed.\n#{e.message}"
     end
 
     tempfile.read
   end
-
-  def write(file, bucket_name, options = {})
-    raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name)
-
-    if file?(file)
-      write_file(file, bucket_name, options)
-    else
-      write_data(file, bucket_name, options)
-    end
-  end
-  deprecate :write, 'write_file or write_data', 2020, 1
 
   def write_file(file, bucket_name, options = {})
     raise FileServiceError, 'Invalid input. One or more input values is nil' if input_invalid?(file, bucket_name)
