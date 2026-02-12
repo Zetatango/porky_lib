@@ -67,8 +67,6 @@ namespace :file do
   end
 end
 
-private
-
 def check_arguments(arguments)
   nil_arguments = []
   arguments.map { |key, value| nil_arguments.push(key.to_s.upcase) if value.nil? && !key.nil? }

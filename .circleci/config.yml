@@ -4,7 +4,7 @@ jobs:
     parallelism: 1
     working_directory: ~/porky_lib
     docker:
-      - image: cimg/ruby:3.2.5
+      - image: cimg/ruby:3.3.10
 
     steps:
       - checkout:
@@ -37,7 +37,7 @@ jobs:
       - run:
           name: Run rubocop
           command: |
-            bundle exec rubocop --out test_results/rubocop.txt --format fuubar --require rubocop-rspec --config .rubocop.yml
+            bundle exec rubocop --out test_results/rubocop.txt --format fuubar --config .rubocop.yml
 
       - run:
           name: Run bundle-audit

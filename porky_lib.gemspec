@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.summary       = 'A library for cryptographic services using AWS KMS and RbNaCl'
   spec.homepage      = 'https://github.com/Zetatango/porky_lib'
 
-  spec.required_ruby_version = '>= 3.2.5'
+  spec.required_ruby_version = '>= 3.3'
 
   spec.files = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'aws-sdk-s3'
   spec.add_dependency 'msgpack'
   spec.add_dependency 'rbnacl', '~> 7.1'
+  spec.add_dependency 'rexml'
   spec.metadata = {
     'rubygems_mfa_required' => 'true'
   }
