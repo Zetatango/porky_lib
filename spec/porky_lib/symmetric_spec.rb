@@ -181,14 +181,14 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
   end
 
   describe 'for base encrypt and decrypt' do
-    include_examples 'Encrypt and decrypt tests' do
+    it_behaves_like 'Encrypt and decrypt tests' do
       let(:encrypt_function) { :encrypt }
       let(:decrypt_function) { :decrypt }
     end
   end
 
   describe 'for benchmarked encrypt and decrypt' do
-    include_examples 'Encrypt and decrypt tests' do
+    it_behaves_like 'Encrypt and decrypt tests' do
       let(:encrypt_function) { :encrypt_with_benchmark }
       let(:decrypt_function) { :decrypt_with_benchmark }
     end
@@ -425,12 +425,12 @@ RSpec.describe PorkyLib::Symmetric, type: :request do
     let(:plaintext_key) { RbNaCl::Random.random_bytes(RbNaCl::SecretBox.key_bytes) }
     let(:data) { SecureRandom.base64(32) }
 
-    include_examples 'Encrypt and decrypt with key tests' do
+    it_behaves_like 'Encrypt and decrypt with key tests' do
       let(:encrypt_function) { :encrypt_with_key_with_benchmark }
       let(:decrypt_function) { :decrypt_with_key_with_benchmark }
     end
 
-    include_examples 'Encrypt and decrypt with key tests' do
+    it_behaves_like 'Encrypt and decrypt with key tests' do
       let(:encrypt_function) { :encrypt_with_key }
       let(:decrypt_function) { :decrypt_with_key }
     end
