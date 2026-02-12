@@ -6,6 +6,7 @@ PATH
       aws-sdk-s3
       msgpack
       rbnacl (~> 7.1)
+      rexml
 
 GEM
   remote: https://rubygems.org/
@@ -64,6 +65,7 @@ GEM
     regexp_parser (2.11.3)
     reline (0.6.3)
       io-console (~> 0.5)
+    rexml (3.4.4)
     rspec (3.13.2)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
