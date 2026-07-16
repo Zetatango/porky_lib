@@ -40,10 +40,7 @@ GEM
       reline (>= 0.6.0)
     codacy-coverage (2.2.1)
       simplecov
-    codecov (0.6.0)
-      simplecov (>= 0.15, < 0.22)
     diff-lcs (1.6.2)
-    docile (1.4.1)
     ffi (1.17.3)
     io-console (0.8.2)
     jmespath (1.6.2)
@@ -106,12 +103,10 @@ GEM
       rubocop (~> 1.81)
     rubocop_runner (2.2.1)
     ruby-progressbar (1.13.0)
-    simplecov (0.21.2)
-      docile (~> 1.1)
-      simplecov-html (~> 0.11)
-      simplecov_json_formatter (~> 0.1)
-    simplecov-html (0.13.2)
-    simplecov_json_formatter (0.1.4)
+    simplecov (1.0.1)
+    simplecov-cobertura (4.0.0)
+      rexml
+      simplecov (~> 1.0)
     thor (1.5.0)
     timecop (0.9.10)
     unicode-display_width (3.2.0)
@@ -126,7 +121,6 @@ DEPENDENCIES
   bundler-audit
   byebug
   codacy-coverage
-  codecov
   porky_lib!
   rake
   rspec
@@ -138,6 +132,7 @@ DEPENDENCIES
   rubocop-rspec
   rubocop_runner
   simplecov
+  simplecov-cobertura
   timecop
 
 RUBY VERSION
