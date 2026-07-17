@@ -15,7 +15,6 @@ group :development, :test do
   gem 'bundler-audit'
   gem 'byebug'
   gem 'codacy-coverage'
-  gem 'codecov'
   gem 'rake'
   gem 'rspec'
   gem 'rspec-collection_matchers'
@@ -26,5 +25,6 @@ group :development, :test do
   gem 'rubocop-rspec'
   gem 'rubocop_runner'
   gem 'simplecov'
+  gem 'simplecov-cobertura' # For Codecov CLI compatibility
   gem 'timecop'
 end

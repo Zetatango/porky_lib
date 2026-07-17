@@ -1,0 +1,21 @@
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+  status:
+    project:
+      default:
+        target: auto
+        # simplecov 1.0 no longer counts spec files as covered code (LEN-669),
+        # so the measured line set shrank vs the old baseline that included
+        # them. Allow a small one-time drop so the migration doesn't hard-fail;
+        # master re-baselines to the accurate lib-only number on merge.
+        threshold: 1%
+    patch:
+      default:
+        target: auto
+        informational: true
+
+comment:
+  layout: "reach,diff,flags,tree"
+  require_changes: no

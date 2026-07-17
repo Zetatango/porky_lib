@@ -2,19 +2,22 @@
 
 if ENV.fetch('COVERAGE', nil) || ENV.fetch('CI', nil)
   require 'simplecov'
+  require 'simplecov-cobertura'
   require 'codacy-coverage'
-  require 'codecov'
 
+  # Codecov ingests the Cobertura XML (coverage/coverage.xml) via its CLI in CI.
+  # The codecov Ruby gem was dropped because it pinned simplecov < 0.22, which
+  # blocked simplecov upgrades (LEN-669).
   SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
     [
-      SimpleCov::Formatter::Codecov,
+      SimpleCov::Formatter::CoberturaFormatter,
       SimpleCov::Formatter::HTMLFormatter,
       Codacy::Formatter
     ]
   )
 
   SimpleCov.start do
-    add_group 'LIB', %w[lib spec]
+    group 'LIB', %w[lib spec]
   end
 end
 
