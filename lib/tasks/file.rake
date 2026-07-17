@@ -25,9 +25,7 @@ namespace :file do
 
     # Reads and writes the file
     message, = PorkyLib::FileService.instance.read(arguments[:aws_s3_bucket], arguments[:file_key])
-    file = File.open(destination, 'w')
-    file.puts(message)
-    file.close
+    File.open(destination, 'w') { |file| file.puts(message) }
 
     puts "SUCCESS - Saved file: '#{destination}' with content of the bucket: '#{arguments[:aws_s3_bucket]}' with file_key: '#{arguments[:file_key]}'"
   end
