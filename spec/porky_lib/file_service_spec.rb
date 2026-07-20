@@ -141,7 +141,11 @@ RSpec.describe PorkyLib::FileService, type: :request do
     end
 
     it 'writes the right content to S3 if path is used' do
-      path = write_test_file(plaintext_data).path
+      # Keep the Tempfile referenced for the duration of the example; if only its
+      # path is retained, GC can finalize and unlink the file before write_file
+      # reads it (flaky under GC pressure, e.g. on CI).
+      file = write_test_file(plaintext_data)
+      path = file.path
 
       test_file_content(plaintext_data) do
         file_service.write_file(path, bucket_name, default_key_id)
@@ -155,7 +159,10 @@ RSpec.describe PorkyLib::FileService, type: :request do
     end
 
     it 'raises FileServiceError when file cannot be read (no permission)' do
-      path = write_test_file(plaintext_data).path
+      # Retain the Tempfile so the error asserted below comes from the chmod
+      # (no read permission), not from GC unlinking the file out from under us.
+      file = write_test_file(plaintext_data)
+      path = file.path
 
       expect do
         File.chmod(0o000, path)
