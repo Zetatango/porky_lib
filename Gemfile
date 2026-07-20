@@ -14,7 +14,6 @@ group :development, :test do
   gem 'bundler'
   gem 'bundler-audit'
   gem 'byebug'
-  gem 'codacy-coverage'
   gem 'rake'
   gem 'rspec'
   gem 'rspec-collection_matchers'
