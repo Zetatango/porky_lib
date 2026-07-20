@@ -38,8 +38,6 @@ GEM
       thor (~> 1.0)
     byebug (13.0.0)
       reline (>= 0.6.0)
-    codacy-coverage (2.2.1)
-      simplecov
     diff-lcs (1.6.2)
     ffi (1.17.3)
     io-console (0.8.2)
@@ -121,7 +119,6 @@ DEPENDENCIES
   bundler
   bundler-audit
   byebug
-  codacy-coverage
   porky_lib!
   rake
   rspec

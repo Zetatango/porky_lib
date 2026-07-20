@@ -70,12 +70,6 @@ module PorkyLib::FileServiceHelper
     !file_or_content.is_a?(String)
   end
 
-  def a_path?(content_or_path)
-    return false if contain_null_byte?(content_or_path)
-
-    File.file?(content_or_path)
-  end
-
   def contain_null_byte?(data)
     null_byte = (+"\u0000").force_encoding("ASCII-8BIT")
     data = (+data).force_encoding("ASCII-8BIT")
