@@ -102,7 +102,7 @@ GEM
       rubocop (~> 1.86, >= 1.86.2)
     rubocop_runner (2.2.1)
     ruby-progressbar (1.13.0)
-    simplecov (1.0.1)
+    simplecov (1.0.2)
     simplecov-cobertura (4.0.0)
       rexml
       simplecov (~> 1.0)
